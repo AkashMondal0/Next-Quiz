@@ -1,5 +1,5 @@
 {
-  "id": "567408ea-564f-4853-8fa3-7b996ef86668",
+  "id": "a1b5624b-7c2a-4c18-8f79-fd6287952631",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -10,7 +10,7 @@
       "columns": {
         "user_id": {
           "name": "user_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true
         },
@@ -48,7 +48,7 @@
         },
         "locale": {
           "name": "locale",
-          "type": "varchar",
+          "type": "varchar(20)",
           "primaryKey": false,
           "notNull": false
         },
@@ -148,13 +148,53 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.rooms": {
+      "name": "rooms",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "host_id": {
+          "name": "host_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "status": {
+          "name": "status",
+          "type": "quiz_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'waiting'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.session": {
       "name": "session",
       "schema": "",
       "columns": {
         "user_id": {
           "name": "user_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true
         },
@@ -223,7 +263,7 @@
       "columns": {
         "user_id": {
           "name": "user_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true
         },
@@ -284,14 +324,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "serial",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "username": {
           "name": "username",
-          "type": "varchar",
+          "type": "varchar(50)",
           "primaryKey": false,
           "notNull": true
         },
@@ -361,11 +400,11 @@
         }
       },
       "indexes": {
-        "unique_idx": {
-          "name": "unique_idx",
+        "username_idx": {
+          "name": "username_idx",
           "columns": [
             {
-              "expression": "email",
+              "expression": "username",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -376,11 +415,11 @@
           "method": "btree",
           "with": {}
         },
-        "username_idx": {
-          "name": "username_idx",
+        "email_idx": {
+          "name": "email_idx",
           "columns": [
             {
-              "expression": "username",
+              "expression": "email",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -441,7 +480,7 @@
       "columns": {
         "user_id": {
           "name": "user_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true
         },
@@ -455,8 +494,8 @@
         }
       },
       "indexes": {
-        "userSetting_idx": {
-          "name": "userSetting_idx",
+        "user_settings_idx": {
+          "name": "user_settings_idx",
           "columns": [
             {
               "expression": "user_id",
@@ -494,6 +533,15 @@
     }
   },
   "enums": {
+    "public.quiz_status": {
+      "name": "quiz_status",
+      "schema": "public",
+      "values": [
+        "waiting",
+        "active",
+        "ended"
+      ]
+    },
     "public.role": {
       "name": "role",
       "schema": "public",

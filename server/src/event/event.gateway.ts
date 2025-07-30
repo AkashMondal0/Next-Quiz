@@ -1,34 +1,34 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody } from '@nestjs/websockets';
+import { WebSocketGateway, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { EventService } from './event.service';
-import { CreateEventDto } from './dto/create-event.dto';
-import { UpdateEventDto } from './dto/update-event.dto';
-
-@WebSocketGateway()
+import { Socket } from 'socket.io';
+@WebSocketGateway({
+  cors: {
+    origin: "*",
+    credentials: true,
+  },
+  namespace: 'event',
+  transports: ['websocket'],
+})
 export class EventGateway {
-  constructor(private readonly eventService: EventService) {}
+  constructor(private readonly eventService: EventService) { }
 
-  @SubscribeMessage('createEvent')
-  create(@MessageBody() createEventDto: CreateEventDto) {
-    return this.eventService.create(createEventDto);
+  @SubscribeMessage('connect')
+  async handleConnection(client: Socket) {
+    await this.eventService.handleConnection(client);
   }
 
-  @SubscribeMessage('findAllEvent')
-  findAll() {
-    return this.eventService.findAll();
+  @SubscribeMessage('disconnect')
+  async handleDisconnect(client: Socket) {
+    await this.eventService.handleDisconnect(client);
   }
 
-  @SubscribeMessage('findOneEvent')
-  findOne(@MessageBody() id: number) {
-    return this.eventService.findOne(id);
+  @SubscribeMessage('create_room')
+  async handleCreateRoom(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+    await this.eventService.handleCreateRoom(data, client);
   }
 
-  @SubscribeMessage('updateEvent')
-  update(@MessageBody() updateEventDto: UpdateEventDto) {
-    return this.eventService.update(updateEventDto.id, updateEventDto);
-  }
-
-  @SubscribeMessage('removeEvent')
-  remove(@MessageBody() id: number) {
-    return this.eventService.remove(id);
+  @SubscribeMessage('join_room')
+  async handleJoinRoom(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+    await this.eventService.handleJoinRoom(data, client);
   }
 }

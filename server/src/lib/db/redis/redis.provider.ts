@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import Redis from 'ioredis';
 import configuration from 'src/lib/configs/configuration';
 
@@ -8,6 +8,9 @@ if (!url) throw new Error("REDIS_URL is not defined in .env file");
 export class RedisProvider implements OnModuleInit {
     client: Redis;
     async onModuleInit() {
-        this.client = new Redis(url as string);
+        if (!this.client) {
+            this.client = new Redis(url as string);
+            Logger.log('Redis client connected');
+        }
     }
 }

@@ -5,7 +5,9 @@ import { AuthModule } from './auth/auth.module';
 import { EventModule } from './event/event.module';
 import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
+import { RoomModule } from './room/room.module';
 import configuration from './lib/configs/configuration';
+import { DrizzleProvider } from './lib/db/drizzle/drizzle.provider';
 
 @Module({
   imports: [AuthModule, EventModule, UserModule,
@@ -14,8 +16,9 @@ import configuration from './lib/configs/configuration';
       isGlobal: true,
       envFilePath: ['.env', '.env.development'],
     }),
+    RoomModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, DrizzleProvider],
 })
 export class AppModule { }

@@ -191,7 +191,7 @@ export class AuthService {
       if (!user[0]) {
         return null;
       }
-      return user[0];
+      return user[0] as any;
     } catch (error) {
       Logger.error(`findUser Error:`, error)
       return null;

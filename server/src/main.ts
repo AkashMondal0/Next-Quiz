@@ -22,7 +22,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  await app.listen(process.env.PORT ?? 3000, "0.0.0.0");
+  await app.listen(process.env.PORT ?? 5000, "0.0.0.0");
   for (const key in envs) {
     const element = envs[key];
     if (!element) {
@@ -31,6 +31,6 @@ async function bootstrap() {
       Logger.log(`[ENV] ${key}: ${element} ✅`)
     }
   }
-  Logger.log(`Server is running on: http://localhost:${process.env.PORT ?? 3000}/api/v1`);
+  Logger.log(`Server is running on: http://localhost:${process.env.PORT ?? 5000}/api/v1`);
 }
 bootstrap();

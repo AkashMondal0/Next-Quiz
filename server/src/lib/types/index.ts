@@ -3,3 +3,9 @@ export enum Role {
     Admin = 'admin',
     Public = "public"
 }
+
+export type TemporaryUser = {
+    username: string;
+    id: number;
+    avatar: string;
+}
