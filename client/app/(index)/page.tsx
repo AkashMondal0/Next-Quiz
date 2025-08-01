@@ -1,11 +1,9 @@
 'use client'
-import { toast } from "sonner"
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -20,6 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSession } from "@/store/features/account/AccountSlice";
 import { RootState } from "@/store";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { TemporaryUser } from "@/types";
 
 const FormSchema = z.object({
   username: z.string().min(3, { message: "Username must be at least 3 characters long" }),
@@ -28,13 +27,16 @@ const FormSchema = z.object({
 type FormData = z.infer<typeof FormSchema>;
 
 export default function Page() {
-  const router = useRouter();
   const dispatch = useDispatch();
-  const [username, setUsername] = useLocalStorage<string>('username', '');
+  const [data, setData] = useLocalStorage<TemporaryUser>("username", {
+    id: 0,
+    username: "",
+    avatar: "",
+  });
   const session = useSelector((Root: RootState) => Root.AccountState.session)
   const [mounted, setMounted] = useState(false);
 
-  const { handleSubmit, register, reset, setValue, getValues, formState: { errors } } = useForm({
+  const { handleSubmit, register, formState: { errors } } = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       username: session?.username || "",
@@ -42,9 +44,14 @@ export default function Page() {
   });
 
   const onSubmit = async (data: FormData) => {
-    setUsername(data.username);
+    const id = Math.floor(1000 + Math.random() * 9000);
+    setData({
+      id,
+      username: data.username,
+      avatar: "", // Placeholder for avatar, can be updated later
+    });
     dispatch(setSession({
-      id: Math.random().toString(36).substring(2, 15), // Simulating a user ID
+      id,
       username: data.username,
       email: "email@example.com",
       createdAt: new Date().toISOString(),
@@ -53,16 +60,16 @@ export default function Page() {
   };
 
   useEffect(() => {
-    if (username) {
+    if (data.username) {
       dispatch(setSession({
-        id: Math.random().toString(36).substring(2, 15), // Simulating a user ID
-        username,
+        id: data.id, // Simulating a user ID
+        username: data.username,
         email: "email@example.com",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       } as any))
     }
-  }, [username]);
+  }, [data.username]);
 
   useEffect(() => {
     if (!mounted) {
@@ -82,7 +89,7 @@ export default function Page() {
         <CardHeader className="space-y-1">
 
           <CardTitle className="text-2xl">
-            Quiz Battle - {username}
+            Quiz Battle - {data.username || "Set Username"}
           </CardTitle>
           <CardDescription className="text-muted-foreground">
             Enter your username to start playing
@@ -96,20 +103,6 @@ export default function Page() {
               {errors.username ? <span className="text-red-500">{errors.username?.message}</span> : <></>}
             </div>
           </div>
-          {/* <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-background px-2 text-muted-foreground">
-                                Create an account?
-                                <span className="text-primary-foreground cursor-pointer text-sky-400  ml-1"
-                                    onClick={() => router.replace(`/auth/register`)}>
-                                    Sign Up
-                                </span>
-                            </span>
-                        </div>
-                    </div> */}
         </CardContent>
         <CardFooter>
           <Button

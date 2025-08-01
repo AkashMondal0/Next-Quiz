@@ -3,6 +3,8 @@ import './globals.css'
 import { ThemeProvider } from '@/provider/theme-provider'
 import Redux_Provider from '@/provider/store-provider'
 import Socket_Provider from '@/provider/socket-provider'
+import { Toaster } from '@/components/ui/sonner'
+import Auth_Provider from '@/provider/auth-provider'
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -24,11 +26,13 @@ export default function RootLayout({ children }: {
             disableTransitionOnChange
           >
             <Redux_Provider>
+              <Auth_Provider/>
               <Socket_Provider>
                 {children}
               </Socket_Provider>
             </Redux_Provider>
           </ThemeProvider>
+           <Toaster />
         </body>
       </html>
     </>

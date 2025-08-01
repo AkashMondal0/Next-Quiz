@@ -5,14 +5,16 @@ import { DrizzleProvider } from 'src/lib/db/drizzle/drizzle.provider';
 import { RoomSchema } from 'src/lib/db/drizzle/drizzle.schema';
 import { TemporaryUser } from 'src/lib/types';
 import { event_name } from 'src/lib/configs/connection.name';
+import { RoomCreatedResponse, RoomMatchMakingState } from './entities/room.entity';
+import { AiService } from 'src/ai/ai.service';
 
 @Injectable()
 export class RoomService {
-  private readonly MAX_PLAYERS = 2;
 
   constructor(
     private readonly redis: RedisProvider,
     private readonly usersService: UserService,
+    private readonly aiService: AiService,
     private readonly drizzleProvider: DrizzleProvider
   ) { }
 
@@ -20,7 +22,7 @@ export class RoomService {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   }
 
-  async findOrCreateMatch(user: TemporaryUser, level: number, roomSize: number) {
+  async findOrCreateMatch(user: TemporaryUser, level: number, roomSize: number): Promise<RoomMatchMakingState> {
     const queueKey = `matchmaking:level:${level}:roomSize:${roomSize}`;
     const userIdStr = user.id.toString();
 
@@ -46,8 +48,16 @@ export class RoomService {
       // Get user info
       const users = await this.usersService.getUsersByIds(playersToMatch.map(id => Number(id)));
 
+      // Notify users about the room creation
+      this.notifyUser(event_name.event.roomCreated, {
+        members: users.map(user => user.id),
+        roomCode: room.roomCode || null,
+        players: users,
+        status: 'ready',
+      });
+
       return {
-        roomCode: room[0].code,
+        roomCode: room.roomCode || null,
         players: users,
         status: 'ready',
       };
@@ -57,6 +67,14 @@ export class RoomService {
     const uniqueIds = [...new Set(queuedPlayers)].map(id => Number(id));
     const users = await this.usersService.getUsersByIds(uniqueIds);
 
+    // Notify users that they are still waiting
+    this.notifyUser(event_name.event.roomCreated, {
+      members: users.map(user => user.id),
+      roomCode: null,
+      players: users,
+      status: 'joining',
+    });
+
     return {
       roomCode: null,
       players: users,
@@ -64,7 +82,7 @@ export class RoomService {
     };
   }
 
-  async createRoomWithPlayers(userIds: string[], level: number, roomSize: number) {
+  async createRoomWithPlayers(userIds: string[], level: number, roomSize: number): Promise<RoomCreatedResponse> {
     const hostId = Number(userIds[0]);
     const code = this.generateRoomCode();
 
@@ -95,14 +113,24 @@ export class RoomService {
         status: room[0].status,
         level: level,
         roomSize: roomSize,
+        main_data: null, // Placeholder for main data
+        matchRanking: _userIds.map(id => ({ id, score: 0 })),
       }),
+      'EX',
+      86400 // 1 day expiration in seconds
     );
-
-    return room;
+    room[0].code && this.aiService.generateMainData(room[0].code);
+    return {
+      members: _userIds,
+      roomCode: room[0].code,
+      players: await this.usersService.getUsersByIds(_userIds),
+      status: 'waiting',
+      hostId: room[0].hostId,
+      createdAt: room[0].createdAt,
+    };
   }
 
-
-  async getRoomById(id: string) {
+  async getRoomById(id: string): Promise<RoomCreatedResponse | null> {
     const roomData = await this.redis.client.get(`room:${id}`);
     if (!roomData) return null;
 
@@ -116,10 +144,14 @@ export class RoomService {
     };
   }
 
-  async notifyUser(event: string, data: {
-    members: number[];
-    roomCode?: string | null;
-  }) {
+  async cancelMatchmaking(user: TemporaryUser, level: number, roomSize: number): Promise<void> {
+    const queueKey = `matchmaking:level:${level}:roomSize:${roomSize}`;
+    const userIdStr = user.id.toString();
+    // Remove user from the matchmaking queue
+    await this.redis.client.lrem(queueKey, 0, userIdStr);
+  }
+
+  async notifyUser(event: string, data: RoomCreatedResponse) {
     await this.redis.client.publish(event, JSON.stringify(data));
   }
 

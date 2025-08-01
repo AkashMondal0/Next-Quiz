@@ -8,9 +8,7 @@ if (!url) throw new Error("REDIS_URL is not defined in .env file");
 export class RedisProvider implements OnModuleInit {
     client: Redis;
     async onModuleInit() {
-        if (!this.client) {
-            this.client = new Redis(url as string);
-            Logger.log('Redis client connected');
-        }
+        this.client = new Redis(url as string);
+        Logger.log('Redis client connected');
     }
 }

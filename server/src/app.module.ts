@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { RoomModule } from './room/room.module';
 import configuration from './lib/configs/configuration';
 import { DrizzleProvider } from './lib/db/drizzle/drizzle.provider';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [AuthModule, EventModule, UserModule,
@@ -17,6 +18,7 @@ import { DrizzleProvider } from './lib/db/drizzle/drizzle.provider';
       envFilePath: ['.env', '.env.development'],
     }),
     RoomModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [AppService, DrizzleProvider],

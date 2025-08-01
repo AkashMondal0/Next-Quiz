@@ -13,3 +13,12 @@ export const appInfo = Object.freeze({
     appUrl: "http://localhost:3000",
     supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "",
 });
+
+export const event_name = Object.freeze(
+    {
+        event: {
+            roomCreated: 'room_created',
+            roomActivity: 'room_activity',
+        },
+    }
+)

@@ -12,6 +12,12 @@ export class RoomController {
     return this.roomService.findOrCreateMatch(body.user, body.level, body.roomSize);
   }
 
+  @Post('/cancel-matchmaking')
+  async cancelMatchmaking(@Body() body: { user: TemporaryUser; level: number, roomSize: number }) {
+    await this.roomService.cancelMatchmaking(body.user, body.level, body.roomSize);
+    return { status: 'cancelled' };
+  }
+
   @Get('/:id')
   async getRoomById(@Param('id') id: string) {
     const room = await this.roomService.getRoomById(id);
