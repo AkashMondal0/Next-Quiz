@@ -3,7 +3,7 @@ import { RedisProvider } from 'src/lib/db/redis/redis.provider';
 import { UserService } from 'src/user/user.service';
 import { DrizzleProvider } from 'src/lib/db/drizzle/drizzle.provider';
 import { RoomSchema } from 'src/lib/db/drizzle/drizzle.schema';
-import { TemporaryUser } from 'src/lib/types';
+import { QuizPrompt, TemporaryUser } from 'src/lib/types';
 import { event_name } from 'src/lib/configs/connection.name';
 import { RoomCreatedResponse, RoomMatchMakingState } from './entities/room.entity';
 import { AiService } from 'src/ai/ai.service';
@@ -22,7 +22,7 @@ export class RoomService {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   }
 
-  async findOrCreateMatch(user: TemporaryUser, level: number, roomSize: number): Promise<RoomMatchMakingState> {
+  async findOrCreateMatch(user: TemporaryUser, level: number, roomSize: number, prompt: QuizPrompt): Promise<RoomMatchMakingState> {
     const queueKey = `matchmaking:level:${level}:roomSize:${roomSize}`;
     const userIdStr = user.id.toString();
 
@@ -43,7 +43,7 @@ export class RoomService {
       await this.redis.client.ltrim(queueKey, roomSize, -1);
 
       // Create and cache the room
-      const room = await this.createRoomWithPlayers(playersToMatch, level, roomSize);
+      const room = await this.createRoomWithPlayers(playersToMatch, level, roomSize, prompt);
 
       // Get user info
       const users = await this.usersService.getUsersByIds(playersToMatch.map(id => Number(id)));
@@ -82,7 +82,7 @@ export class RoomService {
     };
   }
 
-  async createRoomWithPlayers(userIds: string[], level: number, roomSize: number): Promise<RoomCreatedResponse> {
+  async createRoomWithPlayers(userIds: string[], level: number, roomSize: number, prompt: QuizPrompt): Promise<RoomCreatedResponse> {
     const hostId = Number(userIds[0]);
     const code = this.generateRoomCode();
 
@@ -119,7 +119,7 @@ export class RoomService {
       'EX',
       86400 // 1 day expiration in seconds
     );
-    room[0].code && this.aiService.generateMainData(room[0].code);
+    room[0].code && this.aiService.generateMainData(room[0].code, prompt);
     return {
       members: _userIds,
       roomCode: room[0].code,

@@ -9,3 +9,15 @@ export type TemporaryUser = {
     id: number;
     avatar: string;
 }
+
+export type QuestionResponse = {
+  text: string;
+  options: string[];
+  correctIndex: number;
+};
+
+export type QuizPrompt = {
+  topic: string;
+  numberOfQuestions?: number;
+  difficulty?: "easy" | "medium" | "hard";
+};

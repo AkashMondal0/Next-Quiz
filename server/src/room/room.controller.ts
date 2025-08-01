@@ -1,15 +1,15 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { RoomService } from './room.service';
-import { TemporaryUser } from 'src/lib/types';
+import { QuizPrompt, TemporaryUser } from 'src/lib/types';
 
 @Controller('room')
 export class RoomController {
   constructor(private readonly roomService: RoomService) { }
 
   @Post('/matchmaking')
-  async handleMatchRequest(@Body() body: { user: TemporaryUser; level: number, roomSize: number }) {
+  async handleMatchRequest(@Body() body: { user: TemporaryUser; level: number, roomSize: number, prompt: QuizPrompt }) {
     await this.roomService.addUser(body.user); // ✅ cache first
-    return this.roomService.findOrCreateMatch(body.user, body.level, body.roomSize);
+    return this.roomService.findOrCreateMatch(body.user, body.level, body.roomSize, body.prompt);
   }
 
   @Post('/cancel-matchmaking')

@@ -137,9 +137,15 @@ const Page = () => {
                     id: session?.id,
                     username: session?.username,
                     avatar: ''
+                    
                 },
                 level: 2,
-                roomSize: 2
+                roomSize: 2,
+                prompt: {
+                    topic: 'general knowledge',
+                    numberOfQuestions: 10,
+                    difficulty: 'medium'
+                }
             });
             setTimeout(() => {
                 if (response.data.roomCode) {
