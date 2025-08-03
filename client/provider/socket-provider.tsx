@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from 'sonner'
 import { io, Socket } from "socket.io-client";
 import { RoomMatchMakingState, RoomSessionActivityData } from "@/types";
-import { setRoomMatchMakingState, setRoomSessionScore } from "@/store/features/room/RoomSlice";
+import { setRoomMatchMakingState, setRoomSessionScore, setRoomSessionSubmit } from "@/store/features/room/RoomSlice";
 
 interface SocketStateType {
     socket: Socket | null
@@ -26,10 +26,10 @@ interface SocketStateType {
 
 export const SocketContext = createContext<SocketStateType>({
     socket: null,
-    sendDataToServer: () => {},
-    connectSocket: () => {},
-    disconnectSocket: () => {},
-    reconnectSocket: () => {},
+    sendDataToServer: () => { },
+    connectSocket: () => { },
+    disconnectSocket: () => { },
+    reconnectSocket: () => { },
     isConnected: false
 });
 
@@ -59,8 +59,14 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
         });
 
         socket.on(event_name.event.roomActivity, (data: RoomSessionActivityData) => {
-            // console.log("Room activity event received:", data);
-            dispatch(setRoomSessionScore(data));
+            switch (data.type) {
+                case "quiz_answer":
+                    dispatch(setRoomSessionScore(data));
+                    break;
+                case "quiz_submit":
+                    dispatch(setRoomSessionSubmit());
+                    break;
+            }
         });
     }, [dispatch]);
 

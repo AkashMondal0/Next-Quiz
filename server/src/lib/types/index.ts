@@ -21,3 +21,19 @@ export type QuizPrompt = {
   numberOfQuestions?: number;
   difficulty?: "easy" | "medium" | "hard";
 };
+
+export type quizAnswerRequest = {
+    answers: number[];
+    userId: string;
+    duration: number;
+    code: string;
+}
+
+export type RoomSessionActivityData = {
+    type: "quiz_submit" | "quiz_answer";
+    members: string[];
+    id: string | number | undefined;
+    totalAnswered: number;
+    code?: string;
+    score: number;
+}

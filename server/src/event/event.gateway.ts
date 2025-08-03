@@ -4,6 +4,8 @@ import { Logger, OnModuleInit } from '@nestjs/common';
 import Redis from 'ioredis';
 import { event_name } from 'src/lib/configs/connection.name';
 import configuration from 'src/lib/configs/configuration';
+import { quizAnswerRequest, RoomSessionActivityData } from 'src/lib/types';
+import { RoomSession } from 'src/room/entities/room.entity';
 
 const url = configuration().REDIS_URL;
 if (!url) throw new Error("REDIS_URL is not defined in .env file");
@@ -34,6 +36,7 @@ export class EventGateway implements OnModuleInit {
         "test",
         event_name.event.roomCreated,
         event_name.event.roomActivity,
+        event_name.event.roomEnded
       );
 
       redisSubscriber.on("message", async (channel, message) => {
@@ -108,8 +111,33 @@ export class EventGateway implements OnModuleInit {
   }
 
   @SubscribeMessage(event_name.event.roomActivity)
-  async handleRoomActivity(@MessageBody() data: any) {
+  async handleRoomActivity(@MessageBody() data: RoomSessionActivityData) {
     // Handle room activity event
     await this.client.publish(event_name.event.roomActivity, JSON.stringify(data));
+  }
+
+  @SubscribeMessage(event_name.event.roomEnded)
+  async handleRoomEnded(@MessageBody() results: quizAnswerRequest) {
+    // console.log('Room ended event received:', results);
+   const roomData = await this.client.get(`room:${results.code}`);
+    if (!roomData) throw new Error('Room not found');
+
+    let room = JSON.parse(roomData) as RoomSession;
+    const correctAns = room.main_data.map((question, index) => question.correctIndex)
+    const userMarks = results.answers.reduce((acc, answer, index) => {
+      return acc + (answer === correctAns[index] ? 1 : 0);
+    }, 0);
+
+    room.matchEnded = true;
+    room.matchResults = room.matchResults || [];
+    room.matchResults.push({
+      totalMarks: room.main_data.length,
+      userMarks,
+      id: results.userId,
+      userAnswers: results.answers,
+    });
+
+    await this.client.set(`room:${results.code}`, JSON.stringify(room));
+    return room;
   }
 }

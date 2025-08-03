@@ -3,9 +3,9 @@ import { RedisProvider } from 'src/lib/db/redis/redis.provider';
 import { UserService } from 'src/user/user.service';
 import { DrizzleProvider } from 'src/lib/db/drizzle/drizzle.provider';
 import { RoomSchema } from 'src/lib/db/drizzle/drizzle.schema';
-import { QuizPrompt, TemporaryUser } from 'src/lib/types';
+import { quizAnswerRequest, QuizPrompt, TemporaryUser } from 'src/lib/types';
 import { event_name } from 'src/lib/configs/connection.name';
-import { RoomCreatedResponse, RoomMatchMakingState } from './entities/room.entity';
+import { RoomCreatedResponse, RoomMatchMakingState, RoomSession } from './entities/room.entity';
 import { AiService } from 'src/ai/ai.service';
 
 @Injectable()
@@ -51,13 +51,13 @@ export class RoomService {
       // Notify users about the room creation
       this.notifyUser(event_name.event.roomCreated, {
         members: users.map(user => user.id),
-        roomCode: room.roomCode || null,
+        code: room.code || null,
         players: users,
         status: 'ready',
       });
 
       return {
-        roomCode: room.roomCode || null,
+        code: room.code || null,
         players: users,
         status: 'ready',
       };
@@ -70,13 +70,13 @@ export class RoomService {
     // Notify users that they are still waiting
     this.notifyUser(event_name.event.roomCreated, {
       members: users.map(user => user.id),
-      roomCode: null,
+      code: null,
       players: users,
       status: 'joining',
     });
 
     return {
-      roomCode: null,
+      code: null,
       players: users,
       status: 'waiting',
     };
@@ -115,6 +115,8 @@ export class RoomService {
         roomSize: roomSize,
         main_data: null, // Placeholder for main data
         matchRanking: _userIds.map(id => ({ id, score: 0 })),
+        matchResults: [],
+        matchEnded: false,
       }),
       'EX',
       86400 // 1 day expiration in seconds
@@ -122,7 +124,7 @@ export class RoomService {
     room[0].code && this.aiService.generateMainData(room[0].code, prompt);
     return {
       members: _userIds,
-      roomCode: room[0].code,
+      code: room[0].code,
       players: await this.usersService.getUsersByIds(_userIds),
       status: 'waiting',
       hostId: room[0].hostId,
@@ -142,6 +144,67 @@ export class RoomService {
       ...room,
       players: users,
     };
+  }
+
+  async getRoomByCode(code: string): Promise<RoomSession | null> {
+    const roomData = await this.redis.client.get(`room:${code}`);
+    if (!roomData) return null;
+
+    const room = JSON.parse(roomData);
+    const userIds = room.players.map((id: string) => Number(id));
+    const users = await this.usersService.getUsersByIds(userIds);
+
+    return {
+      ...room,
+      players: users,
+      readyPlayers: users.filter(user => room.readyPlayers.includes(user.id)),
+    };
+  }
+
+  async updateRoomStatus(roomCode: string, status: "waiting" | "joining" | "ready"): Promise<RoomSession> {
+    const roomData = await this.redis.client.get(`room:${roomCode}`);
+    if (!roomData) throw new Error('Room not found');
+
+    const room = JSON.parse(roomData);
+    room.status = status;
+
+    await this.redis.client.set(`room:${roomCode}`, JSON.stringify(room));
+    return room;
+  }
+
+  async addPlayerToRoom(roomCode: string, user: TemporaryUser): Promise<RoomSession> {
+    const roomData = await this.redis.client.get(`room:${roomCode}`);
+    if (!roomData) throw new Error('Room not found');
+
+    const room = JSON.parse(roomData);
+    if (!room.players.includes(user.id)) {
+      room.players.push(user.id);
+      await this.redis.client.set(`room:${roomCode}`, JSON.stringify(room));
+    }
+
+    return room;
+  }
+
+  async removePlayerFromRoom(roomCode: string, userId: number): Promise<RoomSession> {
+    const roomData = await this.redis.client.get(`room:${roomCode}`);
+    if (!roomData) throw new Error('Room not found');
+
+    const room = JSON.parse(roomData);
+    room.players = room.players.filter((id: string) => Number(id) !== userId);
+
+    await this.redis.client.set(`room:${roomCode}`, JSON.stringify(room));
+    return room;
+  }
+
+  async startMatch(roomCode: string): Promise<RoomSession> {
+    const roomData = await this.redis.client.get(`room:${roomCode}`);
+    if (!roomData) throw new Error('Room not found');
+
+    const room = JSON.parse(roomData);
+    room.status = 'ready';
+
+    await this.redis.client.set(`room:${roomCode}`, JSON.stringify(room));
+    return room;
   }
 
   async cancelMatchmaking(user: TemporaryUser, level: number, roomSize: number): Promise<void> {

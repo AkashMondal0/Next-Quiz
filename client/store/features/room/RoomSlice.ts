@@ -27,12 +27,17 @@ export const RoomSlice = createSlice({
       state.roomSession = action.payload;
     },
     setRoomSessionScore: (state, action: PayloadAction<RoomSessionActivityData>) => {
-      if (state.roomSession?.matchRanking) {
+      if (state.roomSession?.matchRanking && state.roomSession.code === action.payload.code) {
         state.roomSession.matchRanking.forEach(player => {
           if (player.id === action.payload.id) {
             player.score = action.payload.totalAnswered;
           }
         });
+      }
+    },
+    setRoomSessionSubmit: (state) => {
+      if (state.roomSession?.matchRanking) {
+        state.roomSession.matchEnded = true;
       }
     }
   },
@@ -58,7 +63,8 @@ export const {
   setRoomMatchMakingState,
   clearRoomMatchMakingState,
   setRoomSession,
-  setRoomSessionScore
+  setRoomSessionScore,
+  setRoomSessionSubmit
 } = RoomSlice.actions
 
 export default RoomSlice.reducer

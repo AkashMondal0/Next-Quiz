@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { RoomSession, TemporaryUser } from '@/types'
+import { TemporaryUser } from '@/types'
 
 export default function BattleRoomLoadingScreen({
     triggerStartMatch,
@@ -10,7 +10,7 @@ export default function BattleRoomLoadingScreen({
     triggerStartMatch: () => void,
     players: TemporaryUser[]
 }) {
-    const [countdown, setCountdown] = useState(15) // Countdown in seconds
+    const [countdown, setCountdown] = useState(5) // Countdown in seconds
 
     useEffect(() => {
         if (countdown > 0) {

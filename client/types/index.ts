@@ -15,33 +15,56 @@ export type TemporaryUser = {
 }
 
 export type RoomMatchMakingState = {
-    roomCode: string | null;
+    code: string | null;
     players: TemporaryUser[];
     status: "waiting" | "joining" | "ready";
     members?: number[];
 }
 
 export type RoomSessionActivityData = {
-    type: "answered" | "joined" | "left" | "ready";
+    type: "quiz_submit" | "quiz_answer";
     members: string[];
     id: string | number | undefined;
     totalAnswered: number;
+    code?: string;
+    score: number;
 }
-
+export type QuestionResponse = {
+    text: string;
+    options: string[];
+    correctIndex: number;
+};
+export type QuizPrompt = {
+    topic: string;
+    numberOfQuestions?: number;
+    difficulty?: "easy" | "medium" | "hard";
+};
 export type RoomSession = {
     id: string;
-    roomCode: string;
+    code: string;
     players: TemporaryUser[];
     readyPlayers: TemporaryUser[];
     hostId?: string | number;
     status: "waiting" | "joining" | "ready";
     createdAt?: string;
     updatedAt?: string;
-    main_data: any;
+    main_data: QuestionResponse[];
     matchRanking?: {
         id: string;
         score: number;
     }[];
-    matchDuration?: number;
+    matchEnded: boolean;
+    matchDuration: number;
+    matchResults: {
+        totalMarks: number;
+        userMarks: number;
+        id: string;
+        userAnswers: number[];
+    }[];
+}
 
+export type quizAnswerRequest = {
+    answers: number[];
+    userId: string;
+    code: string;
 }
