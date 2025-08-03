@@ -13,12 +13,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSession } from "@/store/features/account/AccountSlice";
 import { RootState } from "@/store";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { TemporaryUser } from "@/types";
 
 const FormSchema = z.object({
   username: z.string().min(3, { message: "Username must be at least 3 characters long" }),
@@ -28,30 +25,18 @@ type FormData = z.infer<typeof FormSchema>;
 
 export default function Page() {
   const dispatch = useDispatch();
-  const [data, setData] = useLocalStorage<TemporaryUser>("username", {
-    id: 0,
-    username: "",
-    avatar: "",
-  });
-  const session = useSelector((Root: RootState) => Root.AccountState.session)
-  const [mounted, setMounted] = useState(false);
+  const session = useSelector((state: RootState) => state.AccountState.session);
 
   const { handleSubmit, register, formState: { errors } } = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      username: session?.username || "",
+      username: "",
     },
   });
 
   const onSubmit = async (data: FormData) => {
-    const id = Math.floor(1000 + Math.random() * 9000);
-    setData({
-      id,
-      username: data.username,
-      avatar: "", // Placeholder for avatar, can be updated later
-    });
     dispatch(setSession({
-      id,
+      id: Math.floor(1000 + Math.random() * 9000),
       username: data.username,
       email: "email@example.com",
       createdAt: new Date().toISOString(),
@@ -59,37 +44,13 @@ export default function Page() {
     } as any))
   };
 
-  useEffect(() => {
-    if (data.username) {
-      dispatch(setSession({
-        id: data.id, // Simulating a user ID
-        username: data.username,
-        email: "email@example.com",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      } as any))
-    }
-  }, [data.username]);
-
-  useEffect(() => {
-    if (!mounted) {
-      setMounted(true);
-    }
-  }, []);
-
-  if (!mounted) {
-    return <div className="h-[100dvh] w-full flex justify-center items-center">
-      <span className="text-muted-foreground">Loading...</span>
-    </div>
-  }
-
   return (
     <div className="h-[100dvh] p-1 flex justify-center items-center w-full">
       <Card className="md:w-96 md:h-auto w-full h-full pt-16 md:pt-0 rounded-3xl">
         <CardHeader className="space-y-1">
 
           <CardTitle className="text-2xl">
-            Quiz Battle - {data.username || "Set Username"}
+            Next Quiz
           </CardTitle>
           <CardDescription className="text-muted-foreground">
             Enter your username to start playing

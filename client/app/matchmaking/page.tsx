@@ -20,6 +20,10 @@ const Page = () => {
     const dispatch = useDispatch()
 
     const handleStartMatchmaking = useCallback(async () => {
+        if (!session || !session.id || !session.username) {
+            toast.error('You must be logged in to start matchmaking.')
+            return
+        }
         try {
             connectSocket()
             const response = await api.post('/room/matchmaking', {
@@ -61,7 +65,6 @@ const Page = () => {
                 level: 2,
                 roomSize: 2
             })
-            // toast.success('Matchmaking cancelled successfully.')
         } catch (error: any) {
             toast.error('Failed to cancel matchmaking. Please try again later.', {
                 description: error?.response?.data?.message || 'An unexpected error occurred.'
@@ -93,12 +96,11 @@ const Page = () => {
     }, [roomMatchMakingState, router])
 
     return (
-        <>
-            {roomMatchMakingState ? <MatchmakingLoadingScreen
-                data={roomMatchMakingState}
-                cancelMatchmaking={handleCancelMatchmaking} /> :
+        <div className="min-h-screen h-screen bg-gradient-to-br from-black via-neutral-900 to-black flex items-center justify-center p-6">
+            {roomMatchMakingState ? <MatchmakingLoadingScreen data={roomMatchMakingState} cancelMatchmaking={handleCancelMatchmaking} />
+                :
                 <StartMatchComponent handleStartMatchmaking={handleStartMatchmaking} />}
-        </>
+        </div>
     );
 }
 

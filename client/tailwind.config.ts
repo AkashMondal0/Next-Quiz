@@ -13,6 +13,32 @@ const config: Config = {
   			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
   			'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))'
   		},
+  		animation: {
+  			'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.65, 0, 0.35, 1) forwards',
+  			'fade-in': 'fadeIn 0.5s ease-out forwards',
+  			'spin-slow': 'spin 1.2s linear infinite',
+  			'progress': 'progress 2s ease-in-out forwards'
+  		},
+  		keyframes: {
+  			fadeInUp: {
+  				'0%': {
+  					opacity: '0',
+  					transform: 'translateY(20px)'
+  				},
+  				'100%': {
+  					opacity: '1',
+  					transform: 'translateY(0)'
+  				}
+  			},
+  			fadeIn: {
+  				'0%': { opacity: '0' },
+  				'100%': { opacity: '1' }
+  			},
+  			progress: {
+  				'0%': { width: '0%' },
+  				'100%': { width: '100%' }
+  			}
+  		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',

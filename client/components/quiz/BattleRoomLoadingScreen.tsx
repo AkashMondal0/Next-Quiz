@@ -61,7 +61,6 @@ export default function BattleRoomLoadingScreen({
                             transition={{ delay: idx * 0.02 }}
                         >
                             <Avatar className="w-12 h-12">
-                                {/* <AvatarImage src={player.avatar} alt={player.username} /> */}
                                 <AvatarFallback className="bg-neutral-800">
                                     {player.username[0]}
                                 </AvatarFallback>

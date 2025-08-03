@@ -3,7 +3,7 @@
 import { RoomSession } from "@/types";
 import { useAxios } from "@/lib/useAxios";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -76,7 +76,6 @@ export default function QuizResultPage({ params }: Props): JSX.Element {
               <Card key={player.id} className="w-full">
                 <CardContent className="flex items-center gap-4 p-5">
                   <Avatar className="h-14 w-14">
-                    <AvatarImage src={player.avatar} alt={player.username} />
                     <AvatarFallback>{player.username.slice(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
@@ -116,11 +115,10 @@ export default function QuizResultPage({ params }: Props): JSX.Element {
                   {q.options.map((opt, i) => (
                     <li
                       key={i}
-                      className={`px-3 py-1 rounded-md ${
-                        i === q.correctIndex
-                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 font-medium"
-                          : "text-muted-foreground"
-                      }`}
+                      className={`px-3 py-1 rounded-md ${i === q.correctIndex
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 font-medium"
+                        : "text-muted-foreground"
+                        }`}
                     >
                       {opt} {i === q.correctIndex && "✅"}
                     </li>
@@ -138,18 +136,16 @@ export default function QuizResultPage({ params }: Props): JSX.Element {
                     return (
                       <div key={res.id} className="flex items-center gap-2 text-sm">
                         <Avatar className="h-6 w-6">
-                          <AvatarImage src={player.avatar} alt={player.username} />
                           <AvatarFallback>{player.username[0].toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <span className="font-medium">{player.username}</span>
                         <span
-                          className={`ml-2 px-2 py-0.5 rounded ${
-                            answerIndex === undefined
-                              ? "bg-gray-200 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300"
-                              : correct
+                          className={`ml-2 px-2 py-0.5 rounded ${answerIndex === undefined
+                            ? "bg-gray-200 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300"
+                            : correct
                               ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
                               : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
-                          }`}
+                            }`}
                         >
                           {answerIndex === undefined
                             ? "No Answer ❌"
