@@ -60,6 +60,7 @@ export type RoomSession = {
         userMarks: number;
         id: string;
         userAnswers: number[];
+        timeTaken: number;
     }[];
 }
 

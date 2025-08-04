@@ -8,7 +8,7 @@ export class RoomController {
 
   @Post('/matchmaking')
   async handleMatchRequest(@Body() body: { user: TemporaryUser; level: number, roomSize: number, prompt: QuizPrompt }) {
-    await this.roomService.addUser(body.user); // ✅ cache first
+    await this.roomService.addUser(body.user);
     return this.roomService.findOrCreateMatch(body.user, body.level, body.roomSize, body.prompt);
   }
 

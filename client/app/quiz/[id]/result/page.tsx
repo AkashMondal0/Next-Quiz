@@ -23,9 +23,18 @@ export default function QuizResultPage({ params }: Props): JSX.Element {
   const playerMap = data ? Object.fromEntries(data.players.map((p) => [p.id, p])) : {};
   const resultMap = data ? Object.fromEntries(data.matchResults.map((r) => [r.id, r])) : {};
 
-  const rankedPlayers = data ? [...data.players].sort(
-    (a, b) => (resultMap[b.id]?.userMarks ?? 0) - (resultMap[a.id]?.userMarks ?? 0)
-  ) : [];
+  // Updated winning logic: Higher score, lower time
+  const rankedPlayers = data ? [...data.players].sort((a, b) => {
+    const resA = resultMap[a.id];
+    const resB = resultMap[b.id];
+    if (!resA || !resB) return 0;
+
+    if (resB.userMarks !== resA.userMarks) {
+      return resB.userMarks - resA.userMarks;
+    }
+
+    return resA.timeTaken - resB.timeTaken;
+  }) : [];
 
   const getRankLabel = (index: number) => {
     switch (index) {
@@ -80,6 +89,7 @@ export default function QuizResultPage({ params }: Props): JSX.Element {
           {rankedPlayers.map((player, index) => {
             const rank = getRankLabel(index);
             const marks = resultMap[player.id]?.userMarks ?? 0;
+            const timeTaken = resultMap[player.id]?.timeTaken ?? 0;
             if (!player) return null;
             return (
               <Card key={player.id} className="w-full">
@@ -98,6 +108,9 @@ export default function QuizResultPage({ params }: Props): JSX.Element {
                     </div>
                     <p className="text-sm text-green-600 mt-1 font-medium">
                       Score: {marks} / {data.main_data.length}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Time Taken: {timeTaken} sec
                     </p>
                     <div className={`mt-2 px-2 py-1 rounded text-xs font-semibold w-fit ${rank.color}`}>
                       {rank.label}
@@ -143,7 +156,7 @@ export default function QuizResultPage({ params }: Props): JSX.Element {
                     const correct = answerIndex === q.correctIndex;
                     if (!player) return null;
                     return (
-                      <div key={res.id} className="flex items-center gap-2 text-sm">
+                      <div key={res.id + qIndex} className="flex items-center gap-2 text-sm">
                         <Avatar className="h-6 w-6">
                           <AvatarFallback>{player.username[0].toUpperCase()}</AvatarFallback>
                         </Avatar>

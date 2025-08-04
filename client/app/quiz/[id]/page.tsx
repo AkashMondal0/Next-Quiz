@@ -6,6 +6,7 @@ import { RoomSession } from '@/types'
 import { useDispatch } from 'react-redux'
 import { setRoomSession } from '@/store/features/room/RoomSlice'
 import dynamic from 'next/dynamic'
+import { useDebounce } from '@/lib/useDebounce'
 
 const MatchScreen = dynamic(() => import('@/components/quiz/MatchScreen'))
 const BattleRoomLoadingScreen = dynamic(() => import('@/components/quiz/BattleRoomLoadingScreen'))
@@ -30,17 +31,19 @@ const Page = ({ params: { id } }: PageProps) => {
     refetch()
   }, [refetch])
 
+ // Debounce the refetch to avoid too many requests
+  const debouncedRefetch = useDebounce(refetch, 2000)
+
   useEffect(() => {
     if (data) {
       dispatch(setRoomSession(data))
 
-      // Re-fetch if main_data is missing or empty
-      if (!data?.main_data?.length) {
-        refetch()
+      if (data?.main_data?.length <= 0) {
+        debouncedRefetch()
       }
     }
-  }, [data, dispatch, refetch])
-
+  }, [data, debouncedRefetch])
+  
   if (data?.matchEnded) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 flex-col">
