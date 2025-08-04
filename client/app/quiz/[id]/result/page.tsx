@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type Props = {
   params: { id: string };
@@ -17,6 +19,26 @@ export default function QuizResultPage({ params }: Props): JSX.Element {
     url: `/room/${id}`,
     method: "get",
   });
+
+  const playerMap = data ? Object.fromEntries(data.players.map((p) => [p.id, p])) : {};
+  const resultMap = data ? Object.fromEntries(data.matchResults.map((r) => [r.id, r])) : {};
+
+  const rankedPlayers = data ? [...data.players].sort(
+    (a, b) => (resultMap[b.id]?.userMarks ?? 0) - (resultMap[a.id]?.userMarks ?? 0)
+  ) : [];
+
+  const getRankLabel = (index: number) => {
+    switch (index) {
+      case 0:
+        return { label: "🥇 1st Place", color: "bg-yellow-100 text-yellow-800" };
+      case 1:
+        return { label: "🥈 2nd Place", color: "bg-gray-200 text-gray-800" };
+      case 2:
+        return { label: "🥉 3rd Place", color: "bg-orange-100 text-orange-800" };
+      default:
+        return { label: `#${index + 1}`, color: "bg-muted text-muted-foreground" };
+    }
+  };
 
   if (loading || !data) {
     return (
@@ -34,34 +56,21 @@ export default function QuizResultPage({ params }: Props): JSX.Element {
     );
   }
 
-  const playerMap = Object.fromEntries(data.players.map((p) => [p.id, p]));
-  const resultMap = Object.fromEntries(data.matchResults.map((r) => [r.id, r]));
-
-  const rankedPlayers = [...data.players].sort(
-    (a, b) => (resultMap[b.id]?.userMarks ?? 0) - (resultMap[a.id]?.userMarks ?? 0)
-  );
-
-  const getRankLabel = (index: number) => {
-    switch (index) {
-      case 0:
-        return { label: "🥇 1st Place", color: "bg-yellow-100 text-yellow-800" };
-      case 1:
-        return { label: "🥈 2nd Place", color: "bg-gray-200 text-gray-800" };
-      case 2:
-        return { label: "🥉 3rd Place", color: "bg-orange-100 text-orange-800" };
-      default:
-        return { label: `#${index + 1}`, color: "bg-muted text-muted-foreground" };
-    }
-  };
-
   return (
     <div className="max-w-6xl mx-auto px-4 py-10 space-y-10">
       {/* Header */}
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Quiz Results</h1>
-        <p className="text-muted-foreground text-sm">
-          Room: <span className="font-medium">{data.code}</span>
-        </p>
+      <div className="flex justify-between">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">Quiz Results</h1>
+          <p className="text-muted-foreground text-sm">
+            Room: <span className="font-medium">{data.code}</span>
+          </p>
+        </div>
+        <Link href="/" className="mt-4">
+          <Button variant="secondary" size="sm">
+            Back to Home
+          </Button>
+        </Link>
       </div>
 
       {/* Player Rankings */}
@@ -71,7 +80,7 @@ export default function QuizResultPage({ params }: Props): JSX.Element {
           {rankedPlayers.map((player, index) => {
             const rank = getRankLabel(index);
             const marks = resultMap[player.id]?.userMarks ?? 0;
-
+            if (!player) return null;
             return (
               <Card key={player.id} className="w-full">
                 <CardContent className="flex items-center gap-4 p-5">
@@ -132,7 +141,7 @@ export default function QuizResultPage({ params }: Props): JSX.Element {
                     const answerIndex = res.userAnswers?.[qIndex];
                     const selected = answerIndex !== undefined ? q.options[answerIndex] : null;
                     const correct = answerIndex === q.correctIndex;
-
+                    if (!player) return null;
                     return (
                       <div key={res.id} className="flex items-center gap-2 text-sm">
                         <Avatar className="h-6 w-6">

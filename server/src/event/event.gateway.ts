@@ -135,6 +135,7 @@ export class EventGateway implements OnModuleInit {
       userMarks,
       id: results.userId,
       userAnswers: results.answers,
+      timeTaken: results.timeTaken,
     });
 
     await this.client.set(`room:${results.code}`, JSON.stringify(room));

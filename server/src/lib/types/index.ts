@@ -27,6 +27,7 @@ export type quizAnswerRequest = {
     userId: string;
     duration: number;
     code: string;
+    timeTaken: number;
 }
 
 export type RoomSessionActivityData = {

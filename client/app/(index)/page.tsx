@@ -1,79 +1,117 @@
 'use client'
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { useDispatch, useSelector } from "react-redux";
-import { setSession } from "@/store/features/account/AccountSlice";
-import { RootState } from "@/store";
 
-const FormSchema = z.object({
-  username: z.string().min(3, { message: "Username must be at least 3 characters long" }),
-});
+import React, { useEffect, useContext, useCallback } from 'react'
+import api from '@/lib/axios'
+import { toast } from 'sonner'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '@/store'
+import { useRouter } from 'next/navigation'
+import { SocketContext } from '@/provider/socket-provider'
+import { setRoomMatchMakingState } from '@/store/features/room/RoomSlice'
+import dynamic from 'next/dynamic'
 
-type FormData = z.infer<typeof FormSchema>;
+const MatchmakingLoadingScreen = dynamic(() => import('@/components/quiz/MatchmakingLoadingScreen'), { ssr: false })
+const LoginComponent = dynamic(() => import('@/components/quiz/LoginComponent'), { ssr: false })
+const SelectMatchComponent = dynamic(() => import('@/components/room/SelectMatchComponent'), { ssr: false })
 
-export default function Page() {
-  const dispatch = useDispatch();
-  const session = useSelector((state: RootState) => state.AccountState.session);
 
-  const { handleSubmit, register, formState: { errors } } = useForm({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      username: "",
-    },
-  });
+const Page = () => {
+    const { reconnectSocket, disconnectSocket, connectSocket } = useContext(SocketContext)
+    const roomMatchMakingState = useSelector((Root: RootState) => Root.RoomState.roomMatchMakingState)
+    const session = useSelector((Root: RootState) => Root.AccountState.session)
+    const router = useRouter()
+    const dispatch = useDispatch()
 
-  const onSubmit = async (data: FormData) => {
-    dispatch(setSession({
-      id: Math.floor(1000 + Math.random() * 9000),
-      username: data.username,
-      email: "email@example.com",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as any))
-  };
+    const handleStartMatchmaking = useCallback(async (roomSize: number = 2) => {
+        if (!session || !session.id || !session.username) {
+            toast.error('You must be logged in to start matchmaking.')
+            return
+        }
+        try {
+            connectSocket()
+            const response = await api.post('/room/matchmaking', {
+                user: {
+                    id: session?.id,
+                    username: session?.username,
+                    avatar: ''
+                },
+                level: 1,
+                roomSize: roomSize,
+                prompt: {
+                    topic: 'general knowledge',
+                    numberOfQuestions: 10,
+                    difficulty: 'medium'
+                }
+            })
 
-  return (
-    <div className="h-[100dvh] p-1 flex justify-center items-center w-full">
-      <Card className="md:w-96 md:h-auto w-full h-full pt-16 md:pt-0 rounded-3xl">
-        <CardHeader className="space-y-1">
+            await new Promise(resolve => setTimeout(resolve, 1800))
+            if (response.data.code) {
+                router.replace(`/quiz/${response.data.code}`)
+            }
+        } catch (error: any) {
+            toast.error('Failed to start matchmaking. Please try again later.', {
+                description: error?.response?.data?.message || 'An unexpected error occurred.'
+            })
+        }
+    }, [connectSocket, session, router])
 
-          <CardTitle className="text-2xl">
-            Next Quiz
-          </CardTitle>
-          <CardDescription className="text-muted-foreground">
-            Enter your username to start playing
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="grid gap-3">
-            <Label htmlFor="username">Username</Label>
-            <Input id="username" type="text" placeholder="Enter your username" {...register("username", { required: true })} />
-            <div className="h-4 w-full text-center mb-2">
-              {errors.username ? <span className="text-red-500">{errors.username?.message}</span> : <></>}
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button
-            type="submit"
-            onClick={handleSubmit(onSubmit)}
-            className="w-full">
-            Save
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
-  )
+    const handleCancelMatchmaking = useCallback(async (roomSize: number = 2) => {
+        try {
+            reconnectSocket()
+            dispatch(setRoomMatchMakingState(null))
+            await api.post('/room/cancel-matchmaking', {
+                user: {
+                    id: session?.id,
+                    username: session?.username,
+                    avatar: ''
+                },
+                level: 1,
+                roomSize: roomSize
+            })
+        } catch (error: any) {
+            toast.error('Failed to cancel matchmaking. Please try again later.', {
+                description: error?.response?.data?.message || 'An unexpected error occurred.'
+            })
+        }
+    }, [session, router])
+
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            disconnectSocket()
+            handleCancelMatchmaking()
+        }
+
+        window.addEventListener("beforeunload", handleBeforeUnload)
+        return () => {
+            disconnectSocket()
+            window.removeEventListener("beforeunload", handleBeforeUnload)
+        }
+    }, [])
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (roomMatchMakingState?.status === "ready") {
+                router.replace(`/quiz/${roomMatchMakingState.code}`)
+            }
+        }, 1800)
+
+        return () => clearTimeout(timer)
+    }, [roomMatchMakingState, router])
+
+    if (!session || !session.id || !session.username) {
+        return (
+            <LoginComponent />
+        );
+    }
+
+    return (
+        <div className="min-h-screen h-screen bg-gradient-to-br from-black via-neutral-900 to-black flex items-center justify-center p-6">
+            {roomMatchMakingState ?
+                <MatchmakingLoadingScreen data={roomMatchMakingState} cancelMatchmaking={handleCancelMatchmaking} />
+                :
+                <SelectMatchComponent handleStartMatchmaking={handleStartMatchmaking} />}
+        </div>
+    );
 }
+
+export default Page;

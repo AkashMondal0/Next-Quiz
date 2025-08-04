@@ -18,7 +18,7 @@ type PageProps = {
 
 const Page = ({ params: { id } }: PageProps) => {
   const dispatch = useDispatch()
-  const { data, loading, refetch } = useAxios<RoomSession>({
+  const { data, error, refetch } = useAxios<RoomSession>({
     url: `/room/${id}`,
     method: 'get',
   })
@@ -56,6 +56,19 @@ const Page = ({ params: { id } }: PageProps) => {
 
   if (matchStarted && data && !data?.matchEnded) {
     return <MatchScreen data={data} />
+  }
+
+  if(error) {
+     return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 flex-col">
+        <h1 className="text-4xl font-extrabold tracking-widest drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] mb-2">
+          Error
+        </h1>
+        <p className="text-xl text-neutral-300 font-medium">
+          Unable to load the room session. Please try again later.
+        </p>
+      </div>
+    )
   }
 
   return (

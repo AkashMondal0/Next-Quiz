@@ -67,4 +67,5 @@ export type quizAnswerRequest = {
     answers: number[];
     userId: string;
     code: string;
+    timeTaken?: number; // in seconds
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { RedisProvider } from 'src/lib/db/redis/redis.provider';
 import { UserService } from 'src/user/user.service';
 import { DrizzleProvider } from 'src/lib/db/drizzle/drizzle.provider';
@@ -133,17 +133,24 @@ export class RoomService {
   }
 
   async getRoomById(id: string): Promise<RoomCreatedResponse | null> {
-    const roomData = await this.redis.client.get(`room:${id}`);
-    if (!roomData) return null;
+    try {
+      const roomData = await this.redis.client.get(`room:${id}`);
+      if (!roomData) {
+        throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
+      }
 
-    const room = JSON.parse(roomData);
-    const userIds = room.players.map((id: string) => Number(id));
-    const users = await this.usersService.getUsersByIds(userIds);
+      const room = JSON.parse(roomData);
+      const userIds = room.players.map((id: string) => Number(id));
+      const users = await this.usersService.getUsersByIds(userIds);
 
-    return {
-      ...room,
-      players: users,
-    };
+      return {
+        ...room,
+        players: users,
+      };
+    } catch (error) {
+      console.error('Error fetching room by ID:', error);
+      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async getRoomByCode(code: string): Promise<RoomSession | null> {

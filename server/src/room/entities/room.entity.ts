@@ -42,5 +42,6 @@ export class RoomSession {
         userMarks: number;
         id: string;
         userAnswers: number[];
+        timeTaken?: number; // Optional field for time taken by the user
     }[];
 }

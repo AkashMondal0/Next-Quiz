@@ -20,11 +20,7 @@ export class RoomController {
 
   @Get('/:id')
   async getRoomById(@Param('id') id: string) {
-    const room = await this.roomService.getRoomById(id);
-    if (!room) {
-      return { status: 'not_found' };
-    }
-    return room;
+    return await this.roomService.getRoomById(id);
   }
 
   @Post('/add-user')

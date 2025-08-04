@@ -5,7 +5,8 @@ import {
     useContext,
     useState,
     useMemo,
-    useCallback
+    useCallback,
+    useRef
 } from 'react'
 import {
     useForm,
@@ -59,6 +60,7 @@ const MatchScreen = ({ data }: { data: RoomSession | undefined | null }) => {
     const [submitted, setSubmitted] = useState(false)
     const [isRankOpen, setIsRankOpen] = useState(false)
     const [answeredIndexes, setAnsweredIndexes] = useState<Set<number>>(new Set())
+    const startTimeRef = useRef<number | null>(null)
 
     const ResultPath = `/quiz/${data?.code}/result`
 
@@ -104,6 +106,8 @@ const MatchScreen = ({ data }: { data: RoomSession | undefined | null }) => {
     const handleSubmitAnswers = async (formData: any) => {
         const score = userScore()
         const totalAnswered = Object.keys(formData).length
+        const timeTaken = startTimeRef.current ? Math.floor((Date.now() - startTimeRef.current) / 1000) : 0
+
         setSubmitted(true)
 
         sendDataToServer(event_name.event.roomActivity, {
@@ -113,6 +117,7 @@ const MatchScreen = ({ data }: { data: RoomSession | undefined | null }) => {
             code: data?.code,
             totalAnswered,
             score,
+            timeTaken, // 👈 send time spent in seconds
         })
 
         const quizAnswers: quizAnswerRequest = {
@@ -122,6 +127,7 @@ const MatchScreen = ({ data }: { data: RoomSession | undefined | null }) => {
             }),
             userId: session?.id || '',
             code: data?.code || '',
+            timeTaken: timeTaken
         }
 
         sendDataToServer(event_name.event.roomEnded, quizAnswers)
@@ -136,6 +142,13 @@ const MatchScreen = ({ data }: { data: RoomSession | undefined | null }) => {
     }, [answers, roomSession, submitted, session?.id])
 
     useEffect(() => {
+        if (!startTimeRef.current) {
+            startTimeRef.current = Date.now()
+        }
+    }, [])
+
+
+    useEffect(() => {
         if (!isConnected) {
             connectSocket()
         }
@@ -147,6 +160,13 @@ const MatchScreen = ({ data }: { data: RoomSession | undefined | null }) => {
 
     return (
         <div className="p-6 min-h-screen bg-gradient-to-b from-black via-neutral-900 to-black text-white">
+
+            {submitted && startTimeRef.current && (
+                <p className="text-green-400 mt-4">
+                    ⏱ You took {Math.floor((Date.now() - startTimeRef.current) / 1000)} seconds.
+                </p>
+            )}
+
             {/* Header */}
             <header className="mb-8">
                 <h1 className="text-4xl font-bold mb-2">Match Quiz</h1>
