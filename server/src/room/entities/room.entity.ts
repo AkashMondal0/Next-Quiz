@@ -16,6 +16,7 @@ export class RoomMatchMakingState {
     players: TemporaryUser[];
     status: "waiting" | "joining" | "ready";
     members?: number[];
+    roomSize: number;
 }
 export type QuestionResponse = {
   text: string;

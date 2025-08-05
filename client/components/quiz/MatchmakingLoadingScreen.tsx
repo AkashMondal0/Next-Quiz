@@ -2,12 +2,7 @@ import { RoomMatchMakingState } from "@/types"
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-const steps = [
-    '🔍 Scanning for opponents across the network...',
-    '🏗 Constructing battle arena...',
-    '⚙️ Syncing players and loading questions...',
-    '✅ Match ready! Get ready to battle!',
-]
+
 export default function MatchmakingLoadingScreen({
     cancelMatchmaking,
     data
@@ -16,7 +11,17 @@ export default function MatchmakingLoadingScreen({
     data: RoomMatchMakingState
 }) {
     const [stepIndex, setStepIndex] = useState(0)
-
+    const steps = [
+        '🔍 Scanning for opponents across the network...',
+        '🏗 Constructing battle arena...',
+        '⚙️ Syncing players and loading questions...',
+        '✅ Match ready! Get ready to battle!',
+        data.players.length > 0 ? (
+            `Waiting for ${data.players.length} player${data.players.length > data?.roomSize ? 's' : ''} to join...`
+        ) : (
+            'Waiting for players to join...'
+        )
+    ]
     useEffect(() => {
         if (stepIndex < steps.length - 1) {
             const timeout = setTimeout(() => {

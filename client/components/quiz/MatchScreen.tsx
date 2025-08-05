@@ -24,6 +24,7 @@ import { SocketContext } from '@/provider/socket-provider'
 import { event_name } from '@/config/app-details'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
+import CountdownTimer from '../CountdownTimer'
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -135,11 +136,11 @@ const MatchScreen = ({ data }: { data: RoomSession | undefined | null }) => {
         router.replace(ResultPath)
     }
 
-    const autoSubmit = useCallback(() => {
-        if (!submitted && roomSession?.matchEnded && session?.id) {
-            handleSubmitAnswers(answers)
-        }
-    }, [answers, roomSession, submitted, session?.id])
+    // const autoSubmit = useCallback(() => {
+    //     if (!submitted && roomSession?.matchEnded && session?.id) {
+    //         handleSubmitAnswers(answers)
+    //     }
+    // }, [answers, roomSession, submitted, session?.id])
 
     useEffect(() => {
         if (!startTimeRef.current) {
@@ -154,19 +155,13 @@ const MatchScreen = ({ data }: { data: RoomSession | undefined | null }) => {
         }
     }, [isConnected, connectSocket])
 
-    useEffect(() => {
-        autoSubmit()
-    }, [roomSession?.matchEnded, autoSubmit])
+    // useEffect(() => {
+    //     autoSubmit()
+    // }, [roomSession?.matchEnded, autoSubmit])
 
     return (
         <div className="p-6 min-h-screen bg-gradient-to-b from-black via-neutral-900 to-black text-white">
-
-            {submitted && startTimeRef.current && (
-                <p className="text-green-400 mt-4">
-                    ⏱ You took {Math.floor((Date.now() - startTimeRef.current) / 1000)} seconds.
-                </p>
-            )}
-
+            
             {/* Header */}
             <header className="mb-8">
                 <h1 className="text-4xl font-bold mb-2">Match Quiz</h1>
@@ -174,6 +169,11 @@ const MatchScreen = ({ data }: { data: RoomSession | undefined | null }) => {
                     Answer questions and climb the leaderboard.
                 </p>
             </header>
+
+            <CountdownTimer
+                duration={data?.matchDuration || 120} // Default to 2 minutes if not set
+                onComplete={() => handleSubmitAnswers(methods.getValues())}
+            />
 
             {/* Floating Button for Mobile Ranking */}
             {!isRankOpen && (

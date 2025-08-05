@@ -19,6 +19,7 @@ export type RoomMatchMakingState = {
     players: TemporaryUser[];
     status: "waiting" | "joining" | "ready";
     members?: number[];
+    roomSize: number;
 }
 
 export type RoomSessionActivityData = {
@@ -69,4 +70,12 @@ export type quizAnswerRequest = {
     userId: string;
     code: string;
     timeTaken?: number; // in seconds
+}
+
+
+export type QuizBattleFormData = {
+    topic: string
+    difficulty: "easy" | "medium" | "hard"
+    numberOfQuestions: number
+    participantLimit: number
 }

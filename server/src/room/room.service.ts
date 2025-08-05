@@ -55,12 +55,14 @@ export class RoomService {
           code: room.code || null,
           players: users,
           status: 'ready',
+
         });
 
         return {
           code: room.code || null,
           players: users,
           status: 'ready',
+          roomSize: roomSize,
         };
       }
 
@@ -80,6 +82,7 @@ export class RoomService {
         code: null,
         players: users,
         status: 'waiting',
+        roomSize: roomSize
       };
     } catch (error) {
       console.error('Error in findOrCreateMatch:', error);

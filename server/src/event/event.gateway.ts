@@ -32,14 +32,30 @@ export class EventGateway implements OnModuleInit {
       this.client = new Redis(url as string);
       this.sub = new Redis(url as string);
       const redisSubscriber = this.sub;
+
       await redisSubscriber.subscribe(
         "test",
+        "__keyevent@0__:expired",
         event_name.event.roomCreated,
         event_name.event.roomActivity,
         event_name.event.roomEnded
       );
 
+      this.client.config('SET', 'notify-keyspace-events', 'Ex')
+        .then(() => {
+          Logger.log('Redis keyspace notifications enabled');
+        })
+        .catch(console.error);
+
       redisSubscriber.on("message", async (channel, message) => {
+        if (channel === "__keyevent@0__:expired") {
+          const expiredKey = message;
+          if (expiredKey.startsWith('room:')) {
+            const roomCode = expiredKey.split(':')[1];
+            Logger.log(`Room with code ${roomCode} has expired`);
+          }
+          return;
+        }
         const data = JSON.parse(message);
         if (channel === "test") {
           this.server.emit(channel, data);
@@ -119,7 +135,7 @@ export class EventGateway implements OnModuleInit {
   @SubscribeMessage(event_name.event.roomEnded)
   async handleRoomEnded(@MessageBody() results: quizAnswerRequest) {
     // console.log('Room ended event received:', results);
-   const roomData = await this.client.get(`room:${results.code}`);
+    const roomData = await this.client.get(`room:${results.code}`);
     if (!roomData) throw new Error('Room not found');
 
     let room = JSON.parse(roomData) as RoomSession;

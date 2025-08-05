@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { SocketContext } from '@/provider/socket-provider'
 import { setRoomMatchMakingState } from '@/store/features/room/RoomSlice'
 import dynamic from 'next/dynamic'
+import { QuizBattleFormData } from '@/types'
 
 const MatchmakingLoadingScreen = dynamic(() => import('@/components/quiz/MatchmakingLoadingScreen'), { ssr: false })
 const LoginComponent = dynamic(() => import('@/components/quiz/LoginComponent'), { ssr: false })
@@ -22,7 +23,12 @@ const Page = () => {
     const router = useRouter()
     const dispatch = useDispatch()
 
-    const handleStartMatchmaking = useCallback(async (roomSize: number = 2) => {
+    const handleStartMatchmaking = useCallback(async (roomSize: number = 2, formData: QuizBattleFormData = {
+        topic: "General Knowledge",
+        difficulty: "medium",
+        numberOfQuestions: 2,
+        participantLimit: roomSize
+    }) => {
         if (!session || !session.id || !session.username) {
             toast.error('You must be logged in to start matchmaking.')
             return
@@ -37,11 +43,7 @@ const Page = () => {
                 },
                 level: 1,
                 roomSize: roomSize,
-                prompt: {
-                    topic: 'general knowledge',
-                    numberOfQuestions: 10,
-                    difficulty: 'medium'
-                }
+                prompt: formData
             })
 
             await new Promise(resolve => setTimeout(resolve, 1800))
