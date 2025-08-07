@@ -40,7 +40,7 @@ export default function QuizBattleComponent({
         formState: { errors, isSubmitting },
     } = useForm<QuizBattleFormData>({
         defaultValues: {
-            topic: "",
+            topic: "javascript General Knowledge",
             difficulty: "easy",
             numberOfQuestions: 10,
             participantLimit: 2,
@@ -53,16 +53,23 @@ export default function QuizBattleComponent({
     const handleQuickMatch = () => {
         setIsLoading(true)
         handleStartMatchmaking(roomSize, {
-            topic: "General Knowledge",
-            difficulty: "medium",
-            numberOfQuestions: 10,
-            participantLimit: roomSize
+            topic: watch("topic"),
+            difficulty: watch("difficulty"),
+            numberOfQuestions: watch("numberOfQuestions"),
+            participantLimit: watch("participantLimit"),
         })
     }
 
     const onSubmit = async (data: QuizBattleFormData) => {
-        console.log("Custom Match Created:", data)
-        alert("Custom Match Created!")
+        setIsLoading(true)
+        try {
+            handleStartMatchmaking(roomSize, data)
+        } catch (error) {
+            console.error("Error starting match:", error)
+        } finally {
+            setIsLoading(false)
+            setShowCustomForm(false) // Hide form after submission
+        }
     }
 
     return (

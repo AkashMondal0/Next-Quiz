@@ -14,9 +14,14 @@ export class RoomCreatedResponse {
 export class RoomMatchMakingState {
     code: string | null;
     players: TemporaryUser[];
-    status: "waiting" | "joining" | "ready";
+    status: "waiting" | "joining" | "ready" | "full";
     members?: number[];
     roomSize: number;
+    prompt?: {
+        topic: string;
+        difficulty: string;
+        numberOfQuestions: number;
+    };
 }
 export type QuestionResponse = {
   text: string;

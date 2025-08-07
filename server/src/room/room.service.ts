@@ -22,9 +22,15 @@ export class RoomService {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   }
 
-  async findOrCreateMatch(user: TemporaryUser, level: number, roomSize: number, prompt: QuizPrompt): Promise<RoomMatchMakingState> {
+  async findOrCreateMatch(
+    user: TemporaryUser,
+    level: number,
+    roomSize: number,
+    prompt: QuizPrompt
+  ): Promise<RoomMatchMakingState> {
     try {
       const queueKey = `matchmaking:level:${level}:roomSize:${roomSize}`;
+      const promptKey = `matchmaking:prompt:${level}:${roomSize}`;
       const userIdStr = user.id.toString();
 
       // Fetch current queue
@@ -34,6 +40,9 @@ export class RoomService {
       if (!queuedPlayers.includes(userIdStr)) {
         await this.redis.client.rpush(queueKey, userIdStr);
         queuedPlayers.push(userIdStr);
+
+        // Store prompt.topic (or full prompt if you prefer) in hash
+        await this.redis.client.hset(promptKey, userIdStr, prompt.topic);
       }
 
       // Check if enough players are in the queue
@@ -43,8 +52,27 @@ export class RoomService {
         // Remove matched players from queue
         await this.redis.client.ltrim(queueKey, roomSize, -1);
 
+        // Get stored prompt topics
+        const promptTopics = await this.redis.client.hmget(promptKey, ...playersToMatch);
+
+        // Find most common prompt topic
+        const topicFrequency: Record<string, number> = {};
+        promptTopics.forEach(topic => {
+          if (topic) topicFrequency[topic] = (topicFrequency[topic] || 0) + 1;
+        });
+        const mostFrequentTopic = Object.entries(topicFrequency).sort((a, b) => b[1] - a[1])[0]?.[0] ?? prompt.topic;
+
+        // Construct final prompt object
+        const finalPrompt: QuizPrompt = {
+          ...prompt,
+          topic: mostFrequentTopic,
+        };
+
         // Create and cache the room
-        const room = await this.createRoomWithPlayers(playersToMatch, level, roomSize, prompt);
+        const room = await this.createRoomWithPlayers(playersToMatch, level, roomSize, finalPrompt);
+
+        // Clean up used prompt topics
+        await this.redis.client.hdel(promptKey, ...playersToMatch);
 
         // Get user info
         const users = await this.usersService.getUsersByIds(playersToMatch.map(id => Number(id)));
@@ -55,7 +83,6 @@ export class RoomService {
           code: room.code || null,
           players: users,
           status: 'ready',
-
         });
 
         return {
@@ -84,13 +111,20 @@ export class RoomService {
         status: 'waiting',
         roomSize: roomSize
       };
+
     } catch (error) {
       console.error('Error in findOrCreateMatch:', error);
       throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async createRoomWithPlayers(userIds: string[], level: number, roomSize: number, prompt: QuizPrompt): Promise<RoomCreatedResponse> {
+
+  async createRoomWithPlayers(
+    userIds: string[],
+    level: number,
+    roomSize: number,
+    prompt: QuizPrompt
+  ): Promise<RoomCreatedResponse> {
     try {
       const hostId = Number(userIds[0]);
       const code = this.generateRoomCode();
@@ -101,7 +135,7 @@ export class RoomService {
         hostId: hostId,
         createdAt: new Date().toISOString(),
         status: 'waiting',
-      }
+      };
 
       const _userIds = userIds.map(id => Number(id));
       await this.redis.client.set(
@@ -121,9 +155,14 @@ export class RoomService {
           matchEnded: false,
         }),
         'EX',
-        86400 // 1 day expiration in seconds
+        86400 // 1 day expiration
       );
-      room.code && this.aiService.generateMainData(room.code, prompt);
+
+      // Trigger prompt data generation
+      if (room.code) {
+        this.aiService.generateMainData(room.code, prompt);
+      }
+
       return {
         members: _userIds,
         code: room.code,
@@ -137,6 +176,7 @@ export class RoomService {
       throw new HttpException('Failed to create room', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
 
   async getRoomById(id: string): Promise<RoomCreatedResponse | null> {
     try {

@@ -45,12 +45,12 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
 
         socket.on('connect', () => {
             setIsConnected(true)
-            toast.success("Socket connected");
+            // toast.success("Socket connected");
         });
 
         socket.on('disconnect', () => {
             setIsConnected(false)
-            toast.error("Socket disconnected");
+            // toast.error("Socket disconnected");
         });
 
         socket.on(event_name.event.roomCreated, (data: RoomMatchMakingState) => {
@@ -104,7 +104,7 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
             setIsConnected(false);
         }
         dispatch(setRoomMatchMakingState(null));
-        toast.info("Socket disconnected");
+        // toast.info("Socket disconnected");
     }, [removeListeners]);
 
     const reconnectSocket = useCallback(() => {
