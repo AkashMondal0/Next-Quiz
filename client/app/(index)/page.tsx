@@ -151,15 +151,15 @@ const Page = () => {
         }
     }, [])
 
-    // useEffect(() => {
-    //     const timer = setTimeout(() => {
-    //         if (roomMatchMakingState?.status === "ready") {
-    //             router.replace(`/quiz/${roomMatchMakingState.code}`)
-    //         }
-    //     }, 1800)
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (roomMatchMakingState?.status === "ready") {
+                router.replace(`/quiz/${roomMatchMakingState.code}`)
+            }
+        }, 1800)
 
-    //     return () => clearTimeout(timer)
-    // }, [roomMatchMakingState, router])
+        return () => clearTimeout(timer)
+    }, [roomMatchMakingState, router])
 
     if (!session || !session.id || !session.username) {
         return (

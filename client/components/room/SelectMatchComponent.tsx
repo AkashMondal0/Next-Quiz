@@ -7,6 +7,7 @@ import MatchSettingsForm from '../quiz/MatchSettingsForm'
 import QuickMatchButton from '../quiz/QuickMatchButton'
 import JoinRoomForm from '../quiz/JoinRoomForm'
 import CustomRoomButton from '../quiz/CustomRoomButton'
+import { toast } from 'sonner'
 
 export default function QuizBattleComponent({
     handleStartMatchmaking,
@@ -62,7 +63,10 @@ export default function QuizBattleComponent({
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-10">
                             <QuickMatchButton
                                 isLoading={isLoading}
-                                onClick={handleQuickMatch}
+                                onClick={() => {
+                                    toast.message('Coming Soon!')
+                                    // handleQuickMatch()
+                                }}
                             />
                             <CustomRoomButton
                                 onClick={() => setMode('customRoom')}

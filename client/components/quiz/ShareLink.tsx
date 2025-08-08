@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Card } from "../ui/card";
 
 export default function ShareLink({ link }: { link: string }) {
     const [copied, setCopied] = useState(false);
@@ -16,12 +17,13 @@ export default function ShareLink({ link }: { link: string }) {
     };
 
     return (
-        <Button
-            onClick={handleCopy}
-            variant={"secondary"}
-            className="w-40"
-        >
-            {copied ? "Copied!" : "🔗 Copy Code"}
-        </Button>
+        <div className="flex flex-col items-center space-y-2">
+            <Card className="w-full p-2 rounded-xl">
+                Room Code - {link}
+            </Card>
+            <Button onClick={handleCopy} variant={"secondary"} className="w-40">
+                {copied ? "Copied!" : "🔗 Copy Code"}
+            </Button>
+        </div>
     );
 }

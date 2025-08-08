@@ -43,7 +43,9 @@ const Page = ({ params: { id } }: PageProps) => {
       }
     }
   }, [data, debouncedRefetch])
-  
+
+  console.log('Room session data:', data)
+
   if (data?.matchEnded) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 flex-col">
@@ -76,12 +78,12 @@ const Page = ({ params: { id } }: PageProps) => {
 
   return (
     <div className="relative w-full h-full">
-      {Array.isArray(data?.players) && data.players.length > 0 && (
+      {/* {Array.isArray(data?.players) && data.players.length > 0 && (
         <BattleRoomLoadingScreen
           players={data.players}
           triggerStartMatch={triggerStartMatch}
         />
-      )}
+      )} */}
     </div>
   )
 }
