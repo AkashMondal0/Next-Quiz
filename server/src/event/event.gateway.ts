@@ -38,7 +38,10 @@ export class EventGateway implements OnModuleInit {
         "__keyevent@0__:expired",
         event_name.event.roomCreated,
         event_name.event.roomActivity,
-        event_name.event.roomEnded
+        event_name.event.roomEnded,
+
+        // Room data events
+        event_name.event.roomData
       );
 
       this.client.config('SET', 'notify-keyspace-events', 'Ex')
@@ -154,7 +157,17 @@ export class EventGateway implements OnModuleInit {
       timeTaken: results.timeTaken,
     });
 
+    const _sData:RoomSessionActivityData= {
+      code: room.code,
+      type: "quiz_result_update",
+      members: room.players.map(player => player.id),
+      id: room.id,
+      totalAnswered: 0,
+      score: 0
+    }
+
     await this.client.set(`room:${results.code}`, JSON.stringify(room));
+    await this.client.publish(event_name.event.roomActivity, JSON.stringify(_sData));
     return room;
   }
 }

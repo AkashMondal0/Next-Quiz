@@ -12,8 +12,8 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from 'sonner'
 import { io, Socket } from "socket.io-client";
-import { RoomMatchMakingState, RoomSessionActivityData } from "@/types";
-import { setRoomMatchMakingState, setRoomSessionScore, setRoomSessionSubmit } from "@/store/features/room/RoomSlice";
+import { RoomMatchMakingState, RoomSession, RoomSessionActivityData } from "@/types";
+import { setRoomMatchMakingState, setRoomSession, setRoomSessionScore, setRoomSessionStart, setRoomSessionSubmit } from "@/store/features/room/RoomSlice";
 
 interface SocketStateType {
     socket: Socket | null
@@ -66,9 +66,18 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
                 case "quiz_submit":
                     dispatch(setRoomSessionSubmit());
                     break;
+                case "quiz_start":
+                    dispatch(setRoomSessionStart(data));
+                    break;
             }
         });
+
+        socket.on(event_name.event.roomData, (data: RoomSession) => {
+            // console.log("Room data event received:", data);
+            dispatch(setRoomSession(data));
+        });
     }, [dispatch]);
+
 
     const removeListeners = useCallback(() => {
         const socket = socketRef.current;
@@ -77,6 +86,8 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
         socket.off('connect');
         socket.off('disconnect');
         socket.off(event_name.event.roomCreated);
+        socket.off(event_name.event.roomActivity);
+        socket.off(event_name.event.roomData);
     }, []);
 
     const connectSocket = useCallback(() => {

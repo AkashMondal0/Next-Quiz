@@ -198,6 +198,20 @@ export class RoomService {
     }
   }
 
+  async getRoomByCode(code: string): Promise<RoomSession | null> {
+    try {
+      const roomData = await this.redis.client.get(`room:${code}`);
+      if (!roomData) {
+        throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
+      }
+      const room = JSON.parse(roomData);
+      return room;
+    } catch (error) {
+      console.error('Error fetching room by code:', error);
+      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   async cancelMatchmaking(user: TemporaryUser, level: number, roomSize: number): Promise<void> {
     const queueKey = `matchmaking:level:${level}:roomSize:${roomSize}`;
     const userIdStr = user.id.toString();
@@ -213,86 +227,107 @@ export class RoomService {
     await this.usersService.cacheUsers([user]); // Missing await was fixed
   }
 
+  // new apis
   async createCustomRoom(user: TemporaryUser, prompt: QuizPrompt): Promise<RoomSession> {
     const roomCode = this.generateRoomCode();
-    const room: RoomSession = {
+    let room: RoomSession = {
       id: roomCode,
+      members: [user.id],
       hostId: user.id,
-      players: [user],
+      players: [{
+        id: user.id || 0,
+        username: user.username || "NO_USERNAME",
+        avatar: user.avatar || "NO_AVATAR"
+      }],
       createdAt: new Date().toISOString(),
       status: 'waiting',
       code: roomCode,
       readyPlayers: [],
       main_data: [],
-      matchResults: []
+      matchResults: [],
+      prompt: prompt,
+      matchStarted: false,
+      matchRanking: [
+        {
+          id: user.id as any,
+          score: 0
+        }
+      ]
     };
-    console.log('Room created:', JSON.stringify(room));
     // Store the room in Redis
     await this.redis.client.set(`room:${roomCode}`, JSON.stringify(room));
 
     // Trigger prompt data generation
-    this.aiService.generateMainData(roomCode, prompt);
+    await this.aiService.generateMainData(roomCode, prompt);
+
     return room;
   }
 
-  // async getRoomByCode(code: string): Promise<RoomSession | null> {
-  //   const roomData = await this.redis.client.get(`room:${code}`);
-  //   if (!roomData) return null;
+  async joinRoomByCode(code: string, user: TemporaryUser): Promise<RoomSession | null> {
+    try {
+      const roomData = await this.redis.client.get(`room:${code}`);
 
-  //   const room = JSON.parse(roomData);
-  //   const userIds = room.players.map((id: string) => Number(id));
-  //   const users = await this.usersService.getUsersByIds(userIds);
+      if (!roomData) {
+        throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
+      }
 
-  //   return {
-  //     ...room,
-  //     players: users,
-  //     readyPlayers: users.filter(user => room.readyPlayers.includes(user.id)),
-  //   };
-  // }
+      const room = JSON.parse(roomData) as RoomSession;
 
-  // async updateRoomStatus(roomCode: string, status: "waiting" | "joining" | "ready"): Promise<RoomSession> {
-  //   const roomData = await this.redis.client.get(`room:${roomCode}`);
-  //   if (!roomData) throw new Error('Room not found');
+      // if (room.matchEnded) {
+      //   throw new HttpException('Room has already ended', HttpStatus.FORBIDDEN);
+      // }
 
-  //   const room = JSON.parse(roomData);
-  //   room.status = status;
+      if (room.prompt?.participantLimit && room.players.length >= room.prompt.participantLimit) {
+        throw new HttpException('Room is full', HttpStatus.FORBIDDEN);
+      }
 
-  //   await this.redis.client.set(`room:${roomCode}`, JSON.stringify(room));
-  //   return room;
-  // }
+      if (room.players.some((player: TemporaryUser) => player.id === user.id)) {
+        throw new HttpException('User is already in the room', HttpStatus.FORBIDDEN);
+      }
 
-  // async addPlayerToRoom(roomCode: string, user: TemporaryUser): Promise<RoomSession> {
-  //   const roomData = await this.redis.client.get(`room:${roomCode}`);
-  //   if (!roomData) throw new Error('Room not found');
+      room.players.push({
+        id: user.id,
+        username: user.username,
+        avatar: user.avatar
+      });
 
-  //   const room = JSON.parse(roomData);
-  //   if (!room.players.includes(user.id)) {
-  //     room.players.push(user.id);
-  //     await this.redis.client.set(`room:${roomCode}`, JSON.stringify(room));
-  //   }
+      room.matchRanking.push({
+        id: user.id as any,
+        score: 0
+      });
 
-  //   return room;
-  // }
+      const members = room.players.map((player: TemporaryUser) => player.id).filter((id: number) => id !== user.id);
 
-  // async removePlayerFromRoom(roomCode: string, userId: number): Promise<RoomSession> {
-  //   const roomData = await this.redis.client.get(`room:${roomCode}`);
-  //   if (!roomData) throw new Error('Room not found');
+      await this.redis.client.set(`room:${code}`, JSON.stringify(room));
+      await this.redis.client.publish(event_name.event.roomData, JSON.stringify({ ...room, members }));
+      return room;
+    } catch (error) {
+      console.error('Error joining room by code:', error);
+      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
-  //   const room = JSON.parse(roomData);
-  //   room.players = room.players.filter((id: string) => Number(id) !== userId);
+  async startRoom(code: string): Promise<RoomSession | null> {
+    try {
+      const roomData = await this.redis.client.get(`room:${code}`);
 
-  //   await this.redis.client.set(`room:${roomCode}`, JSON.stringify(room));
-  //   return room;
-  // }
+      if (!roomData) {
+        throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
+      }
 
-  // async startMatch(roomCode: string): Promise<RoomSession> {
-  //   const roomData = await this.redis.client.get(`room:${roomCode}`);
-  //   if (!roomData) throw new Error('Room not found');
+      const room = JSON.parse(roomData) as RoomSession;
 
-  //   const room = JSON.parse(roomData);
-  //   room.status = 'ready';
+      if (room.status !== 'waiting') {
+        throw new HttpException('Room is not in waiting status', HttpStatus.FORBIDDEN);
+      }
 
-  //   await this.redis.client.set(`room:${roomCode}`, JSON.stringify(room));
-  //   return room;
-  // }
+      room.matchStarted = true;
+      await this.redis.client.set(`room:${code}`, JSON.stringify(room));
+      await this.redis.client.publish(event_name.event.roomData, JSON.stringify(room));
+      return room;
+    } catch (error) {
+      console.error('Error starting room:', error);
+      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

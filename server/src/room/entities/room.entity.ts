@@ -24,13 +24,14 @@ export class RoomMatchMakingState {
     };
 }
 export type QuestionResponse = {
-  text: string;
-  options: string[];
-  correctIndex: number;
+    text: string;
+    options: string[];
+    correctIndex: number;
 };
 export class RoomSession {
     id: string;
     code: string;
+    members: string[] | number[]
     players: TemporaryUser[];
     readyPlayers: TemporaryUser[];
     hostId?: string | number;
@@ -38,11 +39,18 @@ export class RoomSession {
     createdAt?: string;
     updatedAt?: string;
     main_data: QuestionResponse[];
-    matchRanking?: {
+    prompt?: {
+        topic: string;
+        numberOfQuestions?: number;
+        difficulty?: "easy" | "medium" | "hard";
+        participantLimit?: number;
+    }
+    matchRanking: {
         id: string;
         score: number;
     }[];
     matchEnded?: boolean;
+    matchStarted?: boolean;
     matchResults: {
         totalMarks: number;
         userMarks: number;

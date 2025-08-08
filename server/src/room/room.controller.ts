@@ -20,12 +20,17 @@ export class RoomController {
 
   @Get('/:id')
   async getRoomById(@Param('id') id: string) {
-    return await this.roomService.getRoomById(id);
+    return await this.roomService.getRoomByCode(id);
   }
 
   @Post('/custom')
   async createCustomRoom(@Body() body: { user: TemporaryUser; prompt: QuizPrompt }) {
     return await this.roomService.createCustomRoom(body.user, body.prompt);
+  }
+
+  @Post('/custom-join/:code')
+  async getRoomByCode(@Param('code') code: string,@Body() body: { user: TemporaryUser,}) {
+    return await this.roomService.joinRoomByCode(code, body.user);
   }
 
   @Post('/add-user')

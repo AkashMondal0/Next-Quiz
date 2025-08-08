@@ -32,7 +32,7 @@ export default function MatchmakingLoadingScreen({
     }, [stepIndex])
 
     return (
-        <div className="flex flex-col items-center space-y-10 text-white">
+        <div className="min-h-screen flex flex-col items-center space-y-10 text-white">
             {/* Battle Logo */}
             <motion.div
                 className="text-center text-5xl md:text-6xl font-extrabold text-white tracking-widest select-none relative"

@@ -23,8 +23,8 @@ export type RoomMatchMakingState = {
 }
 
 export type RoomSessionActivityData = {
-    type: "quiz_submit" | "quiz_answer";
-    members: string[];
+    type: "quiz_submit" | "quiz_answer" | "quiz_start" | "quiz_result_update";
+    members: (string | number)[];
     id: string | number | undefined;
     totalAnswered: number;
     code?: string;
@@ -54,6 +54,8 @@ export type RoomSession = {
         id: string;
         score: number;
     }[];
+    matchStarted: boolean;
+    prompt: QuizPrompt;
     matchEnded: boolean;
     matchDuration: number;
     matchResults: {
@@ -78,4 +80,5 @@ export type QuizBattleFormData = {
     difficulty: "easy" | "medium" | "hard"
     numberOfQuestions: number
     participantLimit: number
+    roomCode: string
 }

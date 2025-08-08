@@ -1,6 +1,6 @@
 'use client';
 
-import { RoomSession } from "@/types";
+import { RoomSession, RoomSessionActivityData } from "@/types";
 import { useAxios } from "@/lib/useAxios";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -8,6 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useContext, useEffect } from "react";
+import { SocketContext } from "@/provider/socket-provider";
+import { event_name } from "@/config/app-details";
 
 type Props = {
   params: { id: string };
@@ -15,7 +18,9 @@ type Props = {
 
 export default function QuizResultPage({ params }: Props): JSX.Element {
   const { id } = params;
-  const { data, loading } = useAxios<RoomSession>({
+  const { socket, connectSocket } = useContext(SocketContext);
+
+  const { data, loading, refetch } = useAxios<RoomSession>({
     url: `/room/${id}`,
     method: "get",
   });
@@ -49,7 +54,22 @@ export default function QuizResultPage({ params }: Props): JSX.Element {
     }
   };
 
-  if (loading || !data) {
+  useEffect(() => {
+    connectSocket();
+    if (socket) {
+      socket.on(event_name.event.roomActivity, (data: RoomSessionActivityData) => {
+        if (data.type === "quiz_result_update" && data.code === id) refetch();
+      });
+    }
+
+    return () => {
+      if (socket) {
+        socket.off(event_name.event.roomActivity);
+      }
+    };
+  }, [socket, refetch, connectSocket]);
+
+  if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-10">
         <Skeleton className="w-2/3 h-10 mb-8" />
@@ -63,6 +83,10 @@ export default function QuizResultPage({ params }: Props): JSX.Element {
         ))}
       </div>
     );
+  }
+
+  if (!data) {
+    return <></>;
   }
 
   return (
