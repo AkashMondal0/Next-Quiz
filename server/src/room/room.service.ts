@@ -1,9 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { RedisProvider } from 'src/lib/db/redis/redis.provider';
 import { UserService } from 'src/user/user.service';
-import { DrizzleProvider } from 'src/lib/db/drizzle/drizzle.provider';
-// import { RoomSchema } from 'src/lib/db/drizzle/drizzle.schema';
-import { quizAnswerRequest, QuizPrompt, TemporaryUser } from 'src/lib/types';
+import { QuizPrompt, TemporaryUser } from 'src/lib/types';
 import { event_name } from 'src/lib/configs/connection.name';
 import { RoomCreatedResponse, RoomMatchMakingState, RoomSession } from './entities/room.entity';
 import { AiService } from 'src/ai/ai.service';
@@ -15,7 +13,6 @@ export class RoomService {
     private readonly redis: RedisProvider,
     private readonly usersService: UserService,
     private readonly aiService: AiService,
-    // private readonly drizzleProvider: DrizzleProvider
   ) { }
 
   private generateRoomCode(): string {
@@ -39,10 +36,14 @@ export class RoomService {
       // Add user if not already in queue
       if (!queuedPlayers.includes(userIdStr)) {
         await this.redis.client.rpush(queueKey, userIdStr);
+        // Set expiration for 2 minutes
+        await this.redis.client.expire(queueKey, 60 * 2);
         queuedPlayers.push(userIdStr);
 
         // Store prompt.topic (or full prompt if you prefer) in hash
         await this.redis.client.hset(promptKey, userIdStr, prompt.topic);
+        // Set expiration for prompt hash for 2 minutes
+        await this.redis.client.expire(promptKey, 60 * 2);
       }
 
       // Check if enough players are in the queue
@@ -118,7 +119,6 @@ export class RoomService {
     }
   }
 
-
   async createRoomWithPlayers(
     userIds: string[],
     level: number,
@@ -177,7 +177,6 @@ export class RoomService {
     }
   }
 
-
   async getRoomById(id: string): Promise<RoomCreatedResponse | null> {
     try {
       const roomData = await this.redis.client.get(`room:${id}`);
@@ -212,6 +211,28 @@ export class RoomService {
 
   async addUser(user: TemporaryUser) {
     await this.usersService.cacheUsers([user]); // Missing await was fixed
+  }
+
+  async createCustomRoom(user: TemporaryUser, prompt: QuizPrompt): Promise<RoomSession> {
+    const roomCode = this.generateRoomCode();
+    const room: RoomSession = {
+      id: roomCode,
+      hostId: user.id,
+      players: [user],
+      createdAt: new Date().toISOString(),
+      status: 'waiting',
+      code: roomCode,
+      readyPlayers: [],
+      main_data: [],
+      matchResults: []
+    };
+    console.log('Room created:', JSON.stringify(room));
+    // Store the room in Redis
+    await this.redis.client.set(`room:${roomCode}`, JSON.stringify(room));
+
+    // Trigger prompt data generation
+    this.aiService.generateMainData(roomCode, prompt);
+    return room;
   }
 
   // async getRoomByCode(code: string): Promise<RoomSession | null> {

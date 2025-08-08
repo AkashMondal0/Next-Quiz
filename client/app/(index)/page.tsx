@@ -48,7 +48,7 @@ const Page = () => {
 
             await new Promise(resolve => setTimeout(resolve, 1800))
             if (response.data.code) {
-                router.replace(`/quiz/${response.data.code}`)
+                router.push(`/quiz/${response.data.code}`)
             }
         } catch (error: any) {
             toast.error('Failed to start matchmaking. Please try again later.', {
@@ -76,6 +76,39 @@ const Page = () => {
             })
         }
     }, [session, router])
+
+    const handleCustomRoom = useCallback(async (roomSize: number = 2, formData: QuizBattleFormData = {
+        topic: "General Knowledge",
+        difficulty: "medium",
+        numberOfQuestions: 2,
+        participantLimit: roomSize
+    }) => {
+        if (!session || !session.id || !session.username) {
+            toast.error('You must be logged in to start matchmaking.')
+            return
+        }
+        try {
+            const response = await api.post('/room/custom', {
+                user: {
+                    id: session?.id,
+                    username: session?.username,
+                    avatar: ''
+                },
+                level: 1,
+                roomSize: roomSize,
+                prompt: formData
+            })
+
+            await new Promise(resolve => setTimeout(resolve, 1800))
+            if (response.data.code) {
+                router.push(`/quiz/room/${response.data.code}`)
+            }
+        } catch (error: any) {
+            toast.error('Failed to start matchmaking. Please try again later.', {
+                description: error?.response?.data?.message || 'An unexpected error occurred.'
+            })
+        }
+    }, [connectSocket, session, router])
 
     useEffect(() => {
         const handleBeforeUnload = () => {
@@ -111,7 +144,7 @@ const Page = () => {
             {roomMatchMakingState ?
                 <MatchmakingLoadingScreen data={roomMatchMakingState} cancelMatchmaking={handleCancelMatchmaking} />
                 :
-                <SelectMatchComponent handleStartMatchmaking={handleStartMatchmaking} />}
+                <SelectMatchComponent handleStartMatchmaking={handleStartMatchmaking} handleCustomRoom={handleCustomRoom} />}
         </div>
     );
 }

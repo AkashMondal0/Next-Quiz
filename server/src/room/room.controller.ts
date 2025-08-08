@@ -23,6 +23,11 @@ export class RoomController {
     return await this.roomService.getRoomById(id);
   }
 
+  @Post('/custom')
+  async createCustomRoom(@Body() body: { user: TemporaryUser; prompt: QuizPrompt }) {
+    return await this.roomService.createCustomRoom(body.user, body.prompt);
+  }
+
   @Post('/add-user')
   async addUserToRoom(@Body() body: { user: TemporaryUser }) {
     const result = await this.roomService.addUser(body.user);

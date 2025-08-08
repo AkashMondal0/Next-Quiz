@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { RocketIcon, UsersIcon, Loader2 } from 'lucide-react'
+import { RocketIcon, UsersIcon, Loader2, Users2Icon } from 'lucide-react'
 import { useForm, Controller } from "react-hook-form"
 import {
     Card,
@@ -24,12 +24,15 @@ import { QuizBattleFormData } from '@/types'
 
 export default function QuizBattleComponent({
     handleStartMatchmaking,
+    handleCustomRoom,
 }: {
     handleStartMatchmaking: (roomSize: number, formData: QuizBattleFormData) => void;
+    handleCustomRoom: (roomSize: number, formData: QuizBattleFormData) => void;
 }) {
     const [isLoading, setIsLoading] = useState(false)
     const [roomSize, setRoomSize] = useState(2)
     const [showCustomForm, setShowCustomForm] = useState(false)
+    const [showCustomRoomForm, setShowCustomRoomForm] = useState(false)
 
     const {
         register,
@@ -55,9 +58,15 @@ export default function QuizBattleComponent({
         handleStartMatchmaking(roomSize, {
             topic: watch("topic"),
             difficulty: watch("difficulty"),
-            numberOfQuestions: watch("numberOfQuestions"),
-            participantLimit: watch("participantLimit"),
+            numberOfQuestions,
+            participantLimit,
         })
+    }
+
+    const _handleCustomRoom = () => {
+        setShowCustomForm(false)
+        setShowCustomRoomForm(true)
+        setIsLoading(false)
     }
 
     const onSubmit = async (data: QuizBattleFormData) => {
@@ -68,7 +77,18 @@ export default function QuizBattleComponent({
             console.error("Error starting match:", error)
         } finally {
             setIsLoading(false)
-            setShowCustomForm(false) // Hide form after submission
+            setShowCustomForm(false)
+        }
+    }
+
+    const onSubmitCustomRoom = async (data: QuizBattleFormData) => {
+        setIsLoading(true)
+        try {
+            handleCustomRoom(roomSize, data)
+        } catch (error) {
+            console.error("Error creating custom room:", error)
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -93,7 +113,7 @@ export default function QuizBattleComponent({
                     Choose a mode to test your knowledge against others.
                 </motion.p>
 
-                {!showCustomForm && (
+                {!showCustomForm && !showCustomRoomForm && (
                     <>
                         <div className="text-sm text-neutral-300">
                             <label className="block mb-2">Room Size</label>
@@ -155,10 +175,29 @@ export default function QuizBattleComponent({
                                     hidden: { opacity: 0, y: 20 },
                                     show: { opacity: 1, y: 0 },
                                 }}
-                                onClick={() => setShowCustomForm(true)}
+                                onClick={() => {
+                                    setShowCustomForm(true)
+                                    setShowCustomRoomForm(false)
+                                }}
                             >
                                 <UsersIcon className="w-8 h-8 mx-auto mb-3 text-blue-400" />
                                 <h2 className="text-xl font-semibold">Custom Match</h2>
+                                <p className="text-sm text-neutral-400 mt-1">
+                                    Customize game settings and match.
+                                </p>
+                            </motion.button>
+
+                            {/* Custom Room */}
+                            <motion.button
+                                className="bg-neutral-800 border border-neutral-700 rounded-2xl p-6 hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer"
+                                variants={{
+                                    hidden: { opacity: 0, y: 20 },
+                                    show: { opacity: 1, y: 0 },
+                                }}
+                                onClick={_handleCustomRoom}
+                            >
+                                <Users2Icon className="w-8 h-8 mx-auto mb-3 text-yellow-400" />
+                                <h2 className="text-xl font-semibold">Custom Room</h2>
                                 <p className="text-sm text-neutral-400 mt-1">
                                     Create or join a private room with friends.
                                 </p>
@@ -167,7 +206,7 @@ export default function QuizBattleComponent({
                     </>
                 )}
 
-                {showCustomForm && (
+                {(showCustomForm || showCustomRoomForm) && (
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -175,15 +214,21 @@ export default function QuizBattleComponent({
                     >
                         <Card className="bg-neutral-800 border border-neutral-700 rounded-2xl shadow-lg p-6 text-left">
                             <CardHeader>
-                                <CardTitle className="text-xl text-center">Match Settings</CardTitle>
+                                <CardTitle className="text-xl text-center">
+                                    {showCustomRoomForm ? "Custom Room Settings" : "Match Settings"}
+                                </CardTitle>
                                 <CardDescription className="text-center text-neutral-400">
-                                    Customize your quiz battle setup
+                                    {showCustomRoomForm
+                                        ? "Create or join a private room"
+                                        : "Customize your quiz battle setup"}
                                 </CardDescription>
                             </CardHeader>
 
                             <CardContent>
-                                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
+                                <form
+                                    onSubmit={handleSubmit(showCustomRoomForm ? onSubmitCustomRoom : onSubmit)}
+                                    className="space-y-6"
+                                >
                                     {/* Topic */}
                                     <div className="space-y-1">
                                         <Textarea
@@ -191,7 +236,11 @@ export default function QuizBattleComponent({
                                             placeholder="Enter topic (e.g. History, Tech...)"
                                             className="bg-neutral-900 border border-neutral-700 rounded-xl text-white"
                                         />
-                                        {errors.topic && <p className="text-sm text-red-500">{errors.topic.message}</p>}
+                                        {errors.topic && (
+                                            <p className="text-sm text-red-500">
+                                                {errors.topic.message}
+                                            </p>
+                                        )}
                                     </div>
 
                                     {/* Difficulty */}
@@ -200,7 +249,10 @@ export default function QuizBattleComponent({
                                             control={control}
                                             name="difficulty"
                                             render={({ field }) => (
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <Select
+                                                    onValueChange={field.onChange}
+                                                    defaultValue={field.value}
+                                                >
                                                     <SelectTrigger className="rounded-xl bg-neutral-900 border border-neutral-700 text-white">
                                                         <SelectValue placeholder="Select difficulty" />
                                                     </SelectTrigger>
@@ -242,13 +294,16 @@ export default function QuizBattleComponent({
                                             className="w-full rounded-xl bg-green-600 hover:bg-green-700 transition text-white font-semibold"
                                             disabled={isSubmitting}
                                         >
-                                            Create Match
+                                            {showCustomRoomForm ? "Create Room" : "Create Match"}
                                         </Button>
                                         <Button
                                             type="button"
                                             variant="outline"
                                             className="w-full rounded-xl border-neutral-500 text-neutral-300"
-                                            onClick={() => setShowCustomForm(false)}
+                                            onClick={() => {
+                                                setShowCustomForm(false)
+                                                setShowCustomRoomForm(false)
+                                            }}
                                         >
                                             Back
                                         </Button>
