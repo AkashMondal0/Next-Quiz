@@ -83,11 +83,11 @@ const RoomPrepareComponent = ({
 
             <div className='flex justify-center gap-4'>
                 {session?.id === roomSession.hostId && (
-                    <Button className="mt-6 max-w-xs bg-white text-black hover:text-white rounded-lg" onClick={startMatch} variant="secondary">
+                    <Button className="mt-6 max-w-xs rounded-lg" onClick={startMatch} variant={"secondary"}>
                         Start Match
                     </Button>
                 )}
-                <Button className="mt-6 max-w-xs rounded-lg" onClick={leaveRoom} variant="secondary">
+                <Button className="mt-6 max-w-xs rounded-lg" onClick={leaveRoom} variant="destructive">
                     Leave Room
                 </Button>
             </div>

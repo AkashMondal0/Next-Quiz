@@ -2,38 +2,27 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { QuizBattleFormData } from '@/types'
-import RoomSizeSelector from '../battle_room/RoomSizeSelector'
 import MatchSettingsForm from '../battle_room/MatchSettingsForm'
 import QuickMatchButton from '../battle_room/QuickMatchButton'
 import JoinRoomForm from '../battle_room/JoinRoomForm'
 import CustomRoomButton from '../battle_room/CustomRoomButton'
-import { toast } from 'sonner'
 
 export default function QuizBattleComponent({
-    handleStartMatchmaking,
     handleCustomRoom,
     handleJoinCustomRoom
 }: {
-    handleStartMatchmaking: (roomSize: number, formData: QuizBattleFormData) => void
-    handleCustomRoom: (roomSize: number, formData: QuizBattleFormData) => void
+    handleCustomRoom: (formData: QuizBattleFormData) => void
     handleJoinCustomRoom: (input: string) => void
 }) {
-    const [isLoading, setIsLoading] = useState(false)
-    const [roomSize, setRoomSize] = useState(2)
     const [mode, setMode] = useState<'main' | 'custom' | 'customRoom'>('main')
 
-    const handleQuickMatch = (formData: QuizBattleFormData) => {
-        setIsLoading(true)
-        handleStartMatchmaking(roomSize, formData)
-    }
-
-    const handleRoomCreation = (formData: QuizBattleFormData) => {
-        handleCustomRoom(roomSize, formData)
+    const handleStartMatchmaking = () => {
+        // Call the function to start matchmaking
     }
 
     return (
         <main className="min-h-screen flex items-center justify-center px-4">
-            <div className="max-w-xl w-full space-y-8 text-center">
+            <div className="max-w-xl w-full space-y-6 text-center py-16 ">
                 <motion.h1
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -54,20 +43,9 @@ export default function QuizBattleComponent({
 
                 {mode === 'main' && (
                     <>
-                        <RoomSizeSelector
-                            roomSize={roomSize}
-                            setRoomSize={setRoomSize}
-                            disabled={isLoading}
-                        />
-
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-10">
                             <QuickMatchButton
-                                isLoading={isLoading}
-                                onClick={() => {
-                                    toast.message('Coming Soon!')
-                                    // handleQuickMatch()
-                                }}
-                            />
+                                onClick={() => handleStartMatchmaking()} isLoading={false}                            />
                             <CustomRoomButton
                                 onClick={() => setMode('customRoom')}
                             />
@@ -82,8 +60,8 @@ export default function QuizBattleComponent({
                         type={mode}
                         onSubmit={(data) =>
                             mode === 'customRoom'
-                                ? handleRoomCreation(data)
-                                : handleQuickMatch(data)
+                                ? handleCustomRoom(data)
+                                : handleStartMatchmaking()
                         }
                         onBack={() => setMode('main')}
                     />
@@ -92,3 +70,57 @@ export default function QuizBattleComponent({
         </main>
     )
 }
+
+
+
+ //     const handleStartMatchmaking = useCallback(async (formData: QuizBattleFormData = {
+    //     topic: "General Knowledge",
+    //     difficulty: "medium",
+    //     numberOfQuestions: 2,
+    //     participantLimit: 2
+    // }) => {
+    //     if (!session || !session.id || !session.username) {
+    //         toast.error('You must be logged in to start matchmaking.')
+    //         return
+    //     }
+    //     try {
+    //         connectSocket()
+    //         const response = await api.post('/room/matchmaking', {
+    //             user: {
+    //                 id: session?.id,
+    //                 username: session?.username,
+    //                 avatar: ''
+    //             },
+    //             level: 1,
+    //             prompt: formData
+    //         })
+
+    //         await new Promise(resolve => setTimeout(resolve, 1800))
+    //         if (response.data.code) {
+    //             router.push(`/quiz/${response.data.code}`)
+    //         }
+    //     } catch (error: any) {
+    //         toast.error('Failed to start matchmaking. Please try again later.', {
+    //             description: error?.response?.data?.message || 'An unexpected error occurred.'
+    //         })
+    //     }
+    // }, [connectSocket, session, router])
+
+    // const handleCancelMatchmaking = useCallback(async () => {
+    //     try {
+    //         reconnectSocket()
+    //         dispatch(setRoomMatchMakingState(null))
+    //         await api.post('/room/cancel-matchmaking', {
+    //             user: {
+    //                 id: session?.id,
+    //                 username: session?.username,
+    //                 avatar: ''
+    //             },
+    //             level: 1,
+    //         })
+    //     } catch (error: any) {
+    //         toast.error('Failed to cancel matchmaking. Please try again later.', {
+    //             description: error?.response?.data?.message || 'An unexpected error occurred.'
+    //         })
+    //     }
+    // }, [session, router])

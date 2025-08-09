@@ -7,9 +7,17 @@ import { useDispatch } from 'react-redux'
 import { setRoomSession } from '@/store/features/room/RoomSlice'
 import dynamic from 'next/dynamic'
 import { useDebounce } from '@/lib/useDebounce'
+import { Loader2 } from 'lucide-react'
+const Loading = () => <div className="flex justify-center items-center h-screen"><Loader2 className='animate-spin' /></div>;
 
-const MatchScreen = dynamic(() => import('@/components/quiz/QuizMatchComponent'))
-const BattleRoomLoadingScreen = dynamic(() => import('@/components/quiz/BattleRoomLoadingScreen'))
+const MatchScreen = dynamic(() => import('@/components/quiz/QuizMatchComponent'),{
+  loading: () => <Loading />,
+  ssr: false
+})
+const BattleRoomLoadingScreen = dynamic(() => import('@/components/quiz/BattleRoomLoadingScreen'), {
+  loading: () => <Loading />,
+  ssr: false
+})
 
 type PageProps = {
   params: {
@@ -44,11 +52,9 @@ const Page = ({ params: { id } }: PageProps) => {
     }
   }, [data, debouncedRefetch])
 
-  console.log('Room session data:', data)
-
   if (data?.matchEnded) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 flex-col">
+      <div className="p-6 min-h-screen bg-gradient-to-b from-black via-neutral-900 to-black text-white">
         <h1 className="text-4xl font-extrabold tracking-widest drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] mb-2">
           Match Ended
         </h1>
@@ -65,7 +71,7 @@ const Page = ({ params: { id } }: PageProps) => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 flex-col">
+      <div className="p-6 min-h-screen bg-gradient-to-b from-black via-neutral-900 to-black text-white">
         <h1 className="text-4xl font-extrabold tracking-widest drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] mb-2">
           Error
         </h1>
@@ -77,12 +83,14 @@ const Page = ({ params: { id } }: PageProps) => {
   }
 
   return (
-    <div className="relative w-full h-full">
-      {Array.isArray(data?.players) && data.players.length > 0 && (
+    <div className="p-6 min-h-screen bg-gradient-to-b from-black via-neutral-900 to-black text-white">
+      {Array.isArray(data?.players) ? (
         <BattleRoomLoadingScreen
           players={data.players}
           triggerStartMatch={triggerStartMatch}
         />
+      ) : (
+        <p>No players found.</p>
       )}
     </div>
   )

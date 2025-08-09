@@ -78,7 +78,7 @@ export default function MatchSettingsForm({
             <Button type="submit" className="w-full rounded-xl bg-green-600 hover:bg-green-700 transition text-white font-semibold" disabled={isSubmitting}>
               {type === 'customRoom' ? 'Create Room' : 'Create Match'}
             </Button>
-            <Button type="button" variant="outline" className="w-full rounded-xl border border-neutral-500 text-neutral-100" onClick={onBack}>
+            <Button type="button" variant="outline" className="w-full rounded-xl border border-neutral-500 dark:text-neutral-100" onClick={onBack}>
               Back
             </Button>
           </div>
