@@ -35,7 +35,7 @@ export default function QuickMatchButton({ isLoading, onClick }: QuickMatchButto
       ) : (
         <RocketIcon className="w-8 h-8 mx-auto mb-3 text-green-400" />
       )}
-      <h2 className="text-xl font-semibold">
+      <h2 className="text-xl font-semibold text-white">
         {isLoading ? 'Matching...' : 'Quick Match'}
       </h2>
       <p className="text-sm text-neutral-400 mt-1">

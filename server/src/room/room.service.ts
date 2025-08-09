@@ -277,24 +277,32 @@ export class RoomService {
       //   throw new HttpException('Room has already ended', HttpStatus.FORBIDDEN);
       // }
 
-      if (room.prompt?.participantLimit && room.players.length >= room.prompt.participantLimit) {
-        throw new HttpException('Room is full', HttpStatus.FORBIDDEN);
+      if (!room.players.some((player: TemporaryUser) => player.id === user.id)) { // check if user is already in the room
+        if (room.prompt?.participantLimit && room.players.length >= room.prompt.participantLimit) {
+          throw new HttpException('Room is full', HttpStatus.FORBIDDEN);
+        }
+        room.players.push({
+          id: user.id,
+          username: user.username,
+          avatar: user.avatar
+        });
+
+        room.matchRanking.push({
+          id: user.id as any,
+          score: 0
+        });
       }
 
-      if (room.players.some((player: TemporaryUser) => player.id === user.id)) {
-        throw new HttpException('User is already in the room', HttpStatus.FORBIDDEN);
-      }
+      // room.players.push({
+      //   id: user.id,
+      //   username: user.username,
+      //   avatar: user.avatar
+      // });
 
-      room.players.push({
-        id: user.id,
-        username: user.username,
-        avatar: user.avatar
-      });
-
-      room.matchRanking.push({
-        id: user.id as any,
-        score: 0
-      });
+      // room.matchRanking.push({
+      //   id: user.id as any,
+      //   score: 0
+      // });
 
       const members = room.players.map((player: TemporaryUser) => player.id).filter((id: number) => id !== user.id);
 
@@ -303,6 +311,32 @@ export class RoomService {
       return room;
     } catch (error) {
       console.error('Error joining room by code:', error);
+      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async leaveRoom(code: string, user: TemporaryUser): Promise<RoomSession | null> {
+    try {
+      const roomData = await this.redis.client.get(`room:${code}`);
+
+      if (!roomData) {
+        throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
+      }
+
+      const room = JSON.parse(roomData) as RoomSession;
+
+      room.players = room.players.filter((player: TemporaryUser) => player.id !== user.id);
+      room.matchRanking = room.matchRanking.filter((ranking: any) => ranking.id !== user.id);
+
+      room.hostId && (room.hostId = room.players[0]?.id || undefined);
+
+      room.members = room.players.map((player: TemporaryUser) => player.id);
+
+      await this.redis.client.set(`room:${code}`, JSON.stringify(room));
+      await this.redis.client.publish(event_name.event.roomData, JSON.stringify(room));
+      return room;
+    } catch (error) {
+      console.error('Error leaving room:', error);
       throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

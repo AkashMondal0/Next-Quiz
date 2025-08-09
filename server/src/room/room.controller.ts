@@ -33,6 +33,11 @@ export class RoomController {
     return await this.roomService.joinRoomByCode(code, body.user);
   }
 
+  @Post('/custom-leave/:code')
+  async leaveRoom(@Param('code') code: string, @Body() body: { user: TemporaryUser }) {
+    return await this.roomService.leaveRoom(code, body.user);
+  }
+
   @Post('/add-user')
   async addUserToRoom(@Body() body: { user: TemporaryUser }) {
     const result = await this.roomService.addUser(body.user);

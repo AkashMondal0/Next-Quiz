@@ -2,11 +2,11 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { QuizBattleFormData } from '@/types'
-import RoomSizeSelector from '../quiz/RoomSizeSelector'
-import MatchSettingsForm from '../quiz/MatchSettingsForm'
-import QuickMatchButton from '../quiz/QuickMatchButton'
-import JoinRoomForm from '../quiz/JoinRoomForm'
-import CustomRoomButton from '../quiz/CustomRoomButton'
+import RoomSizeSelector from '../battle_room/RoomSizeSelector'
+import MatchSettingsForm from '../battle_room/MatchSettingsForm'
+import QuickMatchButton from '../battle_room/QuickMatchButton'
+import JoinRoomForm from '../battle_room/JoinRoomForm'
+import CustomRoomButton from '../battle_room/CustomRoomButton'
 import { toast } from 'sonner'
 
 export default function QuizBattleComponent({
@@ -38,7 +38,7 @@ export default function QuizBattleComponent({
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
-                    className="text-4xl font-bold"
+                    className="text-4xl font-bold text-white"
                 >
                     🧠 Quiz Battle Arena
                 </motion.h1>

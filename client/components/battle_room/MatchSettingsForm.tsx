@@ -15,13 +15,13 @@ export default function MatchSettingsForm({
   onSubmit: (data: any) => void
   onBack: () => void
 }) {
-  const { register, control, errors, numberOfQuestions, participantLimit, setValue, handleSubmit, isSubmitting } =
+  const { register, errors, numberOfQuestions, participantLimit, setValue, handleSubmit, isSubmitting } =
     useQuizBattleForm()
 
   return (
-    <Card className="bg-neutral-800 border border-neutral-700 rounded-2xl shadow-lg p-6 text-left">
+    <Card className="bg-neutral-800 border border-neutral-700 rounded-2xl shadow-lg text-left">
       <CardHeader>
-        <CardTitle className="text-xl text-center">
+        <CardTitle className="text-xl text-center text-white">
           {type === 'customRoom' ? 'Custom Room Settings' : 'Match Settings'}
         </CardTitle>
         <CardDescription className="text-center text-neutral-400">
@@ -49,10 +49,10 @@ export default function MatchSettingsForm({
             <SelectTrigger className="rounded-xl bg-neutral-900 border border-neutral-700 text-white">
               <SelectValue placeholder="Select difficulty" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="easy">Easy</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="hard">Hard</SelectItem>
+            <SelectContent className='bg-neutral-900 border border-neutral-700'>
+              <SelectItem value="easy" className='text-white'>Easy</SelectItem>
+              <SelectItem value="medium" className='text-white'>Medium</SelectItem>
+              <SelectItem value="hard" className='text-white'>Hard</SelectItem>
             </SelectContent>
           </Select>
 
@@ -78,7 +78,7 @@ export default function MatchSettingsForm({
             <Button type="submit" className="w-full rounded-xl bg-green-600 hover:bg-green-700 transition text-white font-semibold" disabled={isSubmitting}>
               {type === 'customRoom' ? 'Create Room' : 'Create Match'}
             </Button>
-            <Button type="button" variant="outline" className="w-full rounded-xl border-neutral-500 text-neutral-300" onClick={onBack}>
+            <Button type="button" variant="outline" className="w-full rounded-xl border border-neutral-500 text-neutral-100" onClick={onBack}>
               Back
             </Button>
           </div>

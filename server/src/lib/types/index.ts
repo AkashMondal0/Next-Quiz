@@ -31,7 +31,7 @@ export type quizAnswerRequest = {
 }
 
 export type RoomSessionActivityData = {
-    type: "quiz_submit" | "quiz_answer" | "quiz_result_update";
+   type: "quiz_submit" | "quiz_answer" | "quiz_start" | "quiz_result_update" | "quiz_leave";
     members: (string | number)[];
     id: string | number | undefined;
     totalAnswered: number;

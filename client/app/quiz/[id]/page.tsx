@@ -8,7 +8,7 @@ import { setRoomSession } from '@/store/features/room/RoomSlice'
 import dynamic from 'next/dynamic'
 import { useDebounce } from '@/lib/useDebounce'
 
-const MatchScreen = dynamic(() => import('@/components/quiz/MatchScreen'))
+const MatchScreen = dynamic(() => import('@/components/quiz/QuizMatchComponent'))
 const BattleRoomLoadingScreen = dynamic(() => import('@/components/quiz/BattleRoomLoadingScreen'))
 
 type PageProps = {
@@ -31,7 +31,7 @@ const Page = ({ params: { id } }: PageProps) => {
     refetch()
   }, [refetch])
 
- // Debounce the refetch to avoid too many requests
+  // Debounce the refetch to avoid too many requests
   const debouncedRefetch = useDebounce(refetch, 2000)
 
   useEffect(() => {
@@ -63,8 +63,8 @@ const Page = ({ params: { id } }: PageProps) => {
     return <MatchScreen data={data} />
   }
 
-  if(error) {
-     return (
+  if (error) {
+    return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 flex-col">
         <h1 className="text-4xl font-extrabold tracking-widest drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] mb-2">
           Error
@@ -78,12 +78,12 @@ const Page = ({ params: { id } }: PageProps) => {
 
   return (
     <div className="relative w-full h-full">
-      {/* {Array.isArray(data?.players) && data.players.length > 0 && (
+      {Array.isArray(data?.players) && data.players.length > 0 && (
         <BattleRoomLoadingScreen
           players={data.players}
           triggerStartMatch={triggerStartMatch}
         />
-      )} */}
+      )}
     </div>
   )
 }

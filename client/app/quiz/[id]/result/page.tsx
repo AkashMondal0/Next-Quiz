@@ -71,17 +71,8 @@ export default function QuizResultPage({ params }: Props): JSX.Element {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-10">
-        <Skeleton className="w-2/3 h-10 mb-8" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
-          {[1, 2].map((i) => (
-            <Skeleton key={i} className="h-28 rounded-xl" />
-          ))}
-        </div>
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-24 mb-4 rounded-xl" />
-        ))}
-      </div>
+      <>
+      </>
     );
   }
 
