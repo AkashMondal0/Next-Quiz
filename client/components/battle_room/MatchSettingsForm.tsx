@@ -15,7 +15,7 @@ export default function MatchSettingsForm({
   onSubmit: (data: any) => void
   onBack: () => void
 }) {
-  const { register, errors, numberOfQuestions, participantLimit, setValue, handleSubmit, isSubmitting } =
+  const { register, errors, numberOfQuestions, matchDuration, participantLimit, setValue, handleSubmit, isSubmitting } =
     useQuizBattleForm()
 
   return (
@@ -72,6 +72,15 @@ export default function MatchSettingsForm({
             max={500}
             increment={() => setValue('participantLimit', Math.min(participantLimit + 1, 500))}
             decrement={() => setValue('participantLimit', Math.max(participantLimit - 1, 2))}
+          />
+
+          <Counter
+            label="Match Duration (seconds)"
+            value={matchDuration}
+            min={60}
+            max={600}
+            increment={() => setValue('matchDuration', Math.min(matchDuration + 1, 600))}
+            decrement={() => setValue('matchDuration', Math.max(matchDuration - 1, 60))}
           />
 
           <div className="flex gap-4">

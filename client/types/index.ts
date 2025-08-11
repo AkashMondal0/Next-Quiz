@@ -14,7 +14,7 @@ export type TemporaryUser = {
     username: string;
 }
 
-export type RoomMatchMakingState = {
+export type MatchmakingResponse = {
     code: string | null;
     players: TemporaryUser[];
     status: "waiting" | "joining" | "ready";
@@ -54,6 +54,7 @@ export type RoomSession = {
     matchRanking?: {
         id: string;
         score: number;
+        isSubmitted: boolean;
     }[];
     matchStarted: boolean;
     prompt: QuizPrompt;
@@ -82,4 +83,5 @@ export type QuizBattleFormData = {
     numberOfQuestions: number
     participantLimit: number
     roomCode: string
+    matchDuration: number // in seconds, default is 600 (10 minutes)
 }

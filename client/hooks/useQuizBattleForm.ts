@@ -17,6 +17,7 @@ export function useQuizBattleForm(initialValues?: Partial<QuizBattleFormData>) {
       difficulty: 'easy',
       numberOfQuestions: 10,
       participantLimit: 2,
+      matchDuration: 600, // default to 10 minutes
       roomCode: '',
       ...initialValues,
     },
@@ -24,6 +25,7 @@ export function useQuizBattleForm(initialValues?: Partial<QuizBattleFormData>) {
 
   const numberOfQuestions = watch('numberOfQuestions')
   const participantLimit = watch('participantLimit')
+  const matchDuration = watch('matchDuration')
 
   return {
     register,
@@ -33,6 +35,7 @@ export function useQuizBattleForm(initialValues?: Partial<QuizBattleFormData>) {
     setValue,
     numberOfQuestions,
     participantLimit,
+    matchDuration,
     watch,
     Controller, // exporting in case a component wants to use it directly
     isSubmitting,

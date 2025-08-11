@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { RedisProvider } from 'src/lib/db/redis/redis.provider';
 import { UserService } from 'src/user/user.service';
-import { QuizPrompt, TemporaryUser } from 'src/lib/types';
+import { QuizAnswerRequest, QuizPrompt, RoomSessionActivityData, TemporaryUser } from 'src/lib/types';
 import { event_name } from 'src/lib/configs/connection.name';
-import { RoomCreatedResponse, RoomMatchMakingState, RoomSession } from './entities/room.entity';
+import { RoomCreatedResponse, RoomSession } from './entities/room.entity';
 import { AiService } from 'src/ai/ai.service';
 
 @Injectable()
@@ -17,164 +17,6 @@ export class RoomService {
 
   private generateRoomCode(): string {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
-  }
-
-  async findOrCreateMatch(
-    user: TemporaryUser,
-    level: number,
-    roomSize: number,
-    prompt: QuizPrompt
-  ): Promise<RoomMatchMakingState> {
-    try {
-      const queueKey = `matchmaking:level:${level}:roomSize:${roomSize}`;
-      const promptKey = `matchmaking:prompt:${level}:${roomSize}`;
-      const userIdStr = user.id.toString();
-
-      // Fetch current queue
-      let queuedPlayers = await this.redis.client.lrange(queueKey, 0, -1);
-
-      // Add user if not already in queue
-      if (!queuedPlayers.includes(userIdStr)) {
-        await this.redis.client.rpush(queueKey, userIdStr);
-        // Set expiration for 2 minutes
-        await this.redis.client.expire(queueKey, 60 * 2);
-        queuedPlayers.push(userIdStr);
-
-        // Store prompt.topic (or full prompt if you prefer) in hash
-        await this.redis.client.hset(promptKey, userIdStr, prompt.topic);
-        // Set expiration for prompt hash for 2 minutes
-        await this.redis.client.expire(promptKey, 60 * 2);
-      }
-
-      // Check if enough players are in the queue
-      if (queuedPlayers.length >= roomSize) {
-        const playersToMatch = queuedPlayers.slice(0, roomSize);
-
-        // Remove matched players from queue
-        await this.redis.client.ltrim(queueKey, roomSize, -1);
-
-        // Get stored prompt topics
-        const promptTopics = await this.redis.client.hmget(promptKey, ...playersToMatch);
-
-        // Find most common prompt topic
-        const topicFrequency: Record<string, number> = {};
-        promptTopics.forEach(topic => {
-          if (topic) topicFrequency[topic] = (topicFrequency[topic] || 0) + 1;
-        });
-        const mostFrequentTopic = Object.entries(topicFrequency).sort((a, b) => b[1] - a[1])[0]?.[0] ?? prompt.topic;
-
-        // Construct final prompt object
-        const finalPrompt: QuizPrompt = {
-          ...prompt,
-          topic: mostFrequentTopic,
-        };
-
-        // Create and cache the room
-        const room = await this.createRoomWithPlayers(playersToMatch, level, roomSize, finalPrompt);
-
-        // Clean up used prompt topics
-        await this.redis.client.hdel(promptKey, ...playersToMatch);
-
-        // Get user info
-        const users = await this.usersService.getUsersByIds(playersToMatch.map(id => Number(id)));
-
-        // Notify users about the room creation
-        this.notifyUser(event_name.event.roomCreated, {
-          members: users.map(user => user.id),
-          code: room.code || null,
-          players: users,
-          status: 'ready',
-        });
-
-        return {
-          code: room.code || null,
-          players: users,
-          status: 'ready',
-          roomSize: roomSize,
-        };
-      }
-
-      // Still waiting
-      const uniqueIds = [...new Set(queuedPlayers)].map(id => Number(id));
-      const users = await this.usersService.getUsersByIds(uniqueIds);
-
-      // Notify users that they are still waiting
-      this.notifyUser(event_name.event.roomCreated, {
-        members: users.map(user => user.id),
-        code: null,
-        players: users,
-        status: 'joining',
-      });
-
-      return {
-        code: null,
-        players: users,
-        status: 'waiting',
-        roomSize: roomSize
-      };
-
-    } catch (error) {
-      console.error('Error in findOrCreateMatch:', error);
-      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  async createRoomWithPlayers(
-    userIds: string[],
-    level: number,
-    roomSize: number,
-    prompt: QuizPrompt
-  ): Promise<RoomCreatedResponse> {
-    try {
-      const hostId = Number(userIds[0]);
-      const code = this.generateRoomCode();
-
-      const room = {
-        id: Math.random().toString(36).substring(2, 15),
-        code: code,
-        hostId: hostId,
-        createdAt: new Date().toISOString(),
-        status: 'waiting',
-      };
-
-      const _userIds = userIds.map(id => Number(id));
-      await this.redis.client.set(
-        `room:${code}`,
-        JSON.stringify({
-          id: room.id,
-          code: room.code,
-          players: _userIds,
-          hostId: room.hostId,
-          createdAt: room.createdAt,
-          status: room.status,
-          level: level,
-          roomSize: roomSize,
-          main_data: null, // Placeholder for main data
-          matchRanking: _userIds.map(id => ({ id, score: 0 })),
-          matchResults: [],
-          matchEnded: false,
-        }),
-        'EX',
-        86400 // 1 day expiration
-      );
-
-      // Trigger prompt data generation
-      if (room.code) {
-        this.aiService.generateMainData(room.code, prompt);
-      }
-
-      return {
-        members: _userIds,
-        code: room.code,
-        players: await this.usersService.getUsersByIds(_userIds),
-        status: 'waiting',
-        hostId: room.hostId,
-        createdAt: room.createdAt,
-      };
-    } catch (error) {
-      console.error('Error creating room with players:', error);
-      throw new HttpException('Failed to create room', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
   }
 
   async getRoomById(id: string): Promise<RoomCreatedResponse | null> {
@@ -198,6 +40,7 @@ export class RoomService {
     }
   }
 
+  // new apis
   async getRoomByCode(code: string): Promise<RoomSession | null> {
     try {
       const roomData = await this.redis.client.get(`room:${code}`);
@@ -212,22 +55,6 @@ export class RoomService {
     }
   }
 
-  async cancelMatchmaking(user: TemporaryUser, level: number, roomSize: number): Promise<void> {
-    const queueKey = `matchmaking:level:${level}:roomSize:${roomSize}`;
-    const userIdStr = user.id.toString();
-    // Remove user from the matchmaking queue
-    await this.redis.client.lrem(queueKey, 0, userIdStr);
-  }
-
-  async notifyUser(event: string, data: RoomCreatedResponse) {
-    await this.redis.client.publish(event, JSON.stringify(data));
-  }
-
-  async addUser(user: TemporaryUser) {
-    await this.usersService.cacheUsers([user]); // Missing await was fixed
-  }
-
-  // new apis
   async createCustomRoom(user: TemporaryUser, prompt: QuizPrompt): Promise<RoomSession> {
     const roomCode = this.generateRoomCode();
     let room: RoomSession = {
@@ -247,10 +74,12 @@ export class RoomService {
       matchResults: [],
       prompt: prompt,
       matchStarted: false,
+      matchDuration: prompt.matchDuration || 600,
       matchRanking: [
         {
           id: user.id as any,
-          score: 0
+          score: 0,
+          isSubmitted: false 
         }
       ]
     };
@@ -273,10 +102,6 @@ export class RoomService {
 
       const room = JSON.parse(roomData) as RoomSession;
 
-      // if (room.matchEnded) {
-      //   throw new HttpException('Room has already ended', HttpStatus.FORBIDDEN);
-      // }
-
       if (!room.players.some((player: TemporaryUser) => player.id === user.id)) { // check if user is already in the room
         if (room.prompt?.participantLimit && room.players.length >= room.prompt.participantLimit) {
           throw new HttpException('Room is full', HttpStatus.FORBIDDEN);
@@ -289,20 +114,10 @@ export class RoomService {
 
         room.matchRanking.push({
           id: user.id as any,
-          score: 0
+          score: 0,
+          isSubmitted: false 
         });
       }
-
-      // room.players.push({
-      //   id: user.id,
-      //   username: user.username,
-      //   avatar: user.avatar
-      // });
-
-      // room.matchRanking.push({
-      //   id: user.id as any,
-      //   score: 0
-      // });
 
       const members = room.players.map((player: TemporaryUser) => player.id).filter((id: number) => id !== user.id);
 
@@ -363,5 +178,48 @@ export class RoomService {
       console.error('Error starting room:', error);
       throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  async submitRoom(answers: QuizAnswerRequest): Promise<RoomSession | null> {
+    // console.log('Room ended event received:', results);
+    const roomData = await this.redis.client.get(`room:${answers.code}`);
+    if (!roomData) throw new Error('Room not found');
+
+    let room = JSON.parse(roomData) as RoomSession;
+    const correctAns = room.main_data.map((question, index) => question.correctIndex)
+    const userMarks = answers.answers.reduce((acc, answer, index) => {
+      return acc + (answer === correctAns[index] ? 1 : 0);
+    }, 0);
+
+    room.matchEnded = true;
+    room.matchResults = room.matchResults || [];
+    room.matchResults.push({
+      totalMarks: room.main_data.length,
+      userMarks,
+      id: answers.userId,
+      userAnswers: answers.answers,
+      timeTaken: answers.timeTaken,
+    });
+    room.matchRanking = room.matchRanking.map((ranking) => {
+      if (ranking.id === answers.userId) {
+        ranking.score = userMarks;
+        ranking.isSubmitted = true;
+      }
+      return ranking;
+    });
+
+    const _sData: RoomSessionActivityData = {
+      code: room.code,
+      type: "quiz_result_update",
+      members: room.players.map(player => player.id),
+      id: room.id,
+      totalAnswered: 0,
+      score: 0
+    }
+
+    await this.redis.client.set(`room:${answers.code}`, JSON.stringify(room));
+    await this.redis.client.publish(event_name.event.roomActivity, JSON.stringify(_sData));
+    // console.log('Room session updated with match results:', room);
+    return room;
   }
 }

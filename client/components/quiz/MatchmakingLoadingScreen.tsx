@@ -1,4 +1,4 @@
-import { RoomMatchMakingState } from "@/types"
+
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,7 @@ export default function MatchmakingLoadingScreen({
     data
 }: {
     cancelMatchmaking: () => void,
-    data: RoomMatchMakingState
+    data: any
 }) {
     const [stepIndex, setStepIndex] = useState(0)
     const steps = [
@@ -76,7 +76,7 @@ export default function MatchmakingLoadingScreen({
                     }
                 }}
             >
-                {data.players.map((player, index) => (
+                {data.players.map((player:any, index:any) => (
                     <motion.div
                         key={player.id || index}
                         className="flex flex-col items-center space-y-2 p-4 bg-neutral-800 rounded-2xl shadow-md"

@@ -9,8 +9,7 @@ import { event_name } from "@/config/app-details";
 import React, { useContext, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
-import { useDebounce } from "@/lib/useDebounce";
-const Loading = () => <div className="flex justify-center items-center h-screen"><Loader2 className='animate-spin' /></div>;
+const Loading = () => <div className="flex justify-center items-center h-screen"><Loader2 className='animate-spin' size={32} /></div>;
 
 const QuizResultContent = dynamic(() => import("@/components/quiz/QuizResultContent"), {
   ssr: false,
@@ -30,19 +29,18 @@ export default function QuizResultPage({ params }: Props) {
     method: "get",
   });
 
-  const debouncedRefetch = useDebounce(refetch, 1000);
-
   useEffect(() => {
     connectSocket();
     socket?.on(event_name.event.roomActivity, (data: RoomSessionActivityData) => {
+      // console.log("Received room activity data:", data);
       if (data.type === "quiz_result_update" && data.code === id) {
-        debouncedRefetch();
+        refetch();
       }
     });
     return () => {
       socket?.off(event_name.event.roomActivity);
     };
-  }, [socket, id, debouncedRefetch, connectSocket]);
+  }, [socket, id, refetch, connectSocket]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10 space-y-10">

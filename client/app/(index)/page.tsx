@@ -11,13 +11,15 @@ import dynamic from 'next/dynamic'
 import { QuizBattleFormData } from '@/types/quizBattle'
 import QuizGenerationLoader from '@/components/room/QuizGenerationLoader'
 import { Loader2 } from 'lucide-react'
-const Loading = () => <div className="flex justify-center items-center h-screen"><Loader2 className='animate-spin' /></div>;
+const Loading = () => <div className="flex justify-center items-center h-screen"><Loader2 className='animate-spin' size={32} /></div>;
 
-const LoginComponent = dynamic(() => import('@/components/quiz/LoginComponent'), { ssr: false,
-    loading: () => <Loading/>
- })
-const SelectMatchComponent = dynamic(() => import('@/components/room/SelectMatchComponent'), { ssr: false,
-    loading: () => <Loading/>
+const LoginComponent = dynamic(() => import('@/components/quiz/LoginComponent'), {
+    ssr: false,
+    loading: () => <Loading />
+})
+const SelectMatchComponent = dynamic(() => import('@/components/room/SelectMatchComponent'), {
+    ssr: false,
+    loading: () => <Loading />
 })
 
 const Page = () => {
@@ -108,6 +110,7 @@ const Page = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-black via-neutral-900 to-black">
             <SelectMatchComponent
+                loading={loading}
                 handleCustomRoom={handleCustomRoom}
                 handleJoinCustomRoom={handleJoinCustomRoom}
             />

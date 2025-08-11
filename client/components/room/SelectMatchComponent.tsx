@@ -3,22 +3,20 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { QuizBattleFormData } from '@/types'
 import MatchSettingsForm from '../battle_room/MatchSettingsForm'
-import QuickMatchButton from '../battle_room/QuickMatchButton'
 import JoinRoomForm from '../battle_room/JoinRoomForm'
 import CustomRoomButton from '../battle_room/CustomRoomButton'
 
 export default function QuizBattleComponent({
     handleCustomRoom,
+    loading,
     handleJoinCustomRoom
 }: {
     handleCustomRoom: (formData: QuizBattleFormData) => void
+    loading: boolean
     handleJoinCustomRoom: (input: string) => void
 }) {
     const [mode, setMode] = useState<'main' | 'custom' | 'customRoom'>('main')
 
-    const handleStartMatchmaking = () => {
-        // Call the function to start matchmaking
-    }
 
     return (
         <main className="min-h-screen flex items-center justify-center px-4">
@@ -43,26 +41,21 @@ export default function QuizBattleComponent({
 
                 {mode === 'main' && (
                     <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-10">
-                            <QuickMatchButton
-                                onClick={() => handleStartMatchmaking()} isLoading={false}                            />
+                        <div className="grid grid-cols-1 sm:grid-cols-1 gap-6 mt-10">
                             <CustomRoomButton
+                                isLoading={loading}
                                 onClick={() => setMode('customRoom')}
                             />
                         </div>
 
-                        <JoinRoomForm onJoin={handleJoinCustomRoom} />
+                        <JoinRoomForm onJoin={handleJoinCustomRoom} isLoading={loading} />
                     </>
                 )}
 
                 {mode !== 'main' && (
                     <MatchSettingsForm
                         type={mode}
-                        onSubmit={(data) =>
-                            mode === 'customRoom'
-                                ? handleCustomRoom(data)
-                                : handleStartMatchmaking()
-                        }
+                        onSubmit={handleCustomRoom}
                         onBack={() => setMode('main')}
                     />
                 )}
@@ -73,54 +66,54 @@ export default function QuizBattleComponent({
 
 
 
- //     const handleStartMatchmaking = useCallback(async (formData: QuizBattleFormData = {
-    //     topic: "General Knowledge",
-    //     difficulty: "medium",
-    //     numberOfQuestions: 2,
-    //     participantLimit: 2
-    // }) => {
-    //     if (!session || !session.id || !session.username) {
-    //         toast.error('You must be logged in to start matchmaking.')
-    //         return
-    //     }
-    //     try {
-    //         connectSocket()
-    //         const response = await api.post('/room/matchmaking', {
-    //             user: {
-    //                 id: session?.id,
-    //                 username: session?.username,
-    //                 avatar: ''
-    //             },
-    //             level: 1,
-    //             prompt: formData
-    //         })
+//     const handleStartMatchmaking = useCallback(async (formData: QuizBattleFormData = {
+//     topic: "General Knowledge",
+//     difficulty: "medium",
+//     numberOfQuestions: 2,
+//     participantLimit: 2
+// }) => {
+//     if (!session || !session.id || !session.username) {
+//         toast.error('You must be logged in to start matchmaking.')
+//         return
+//     }
+//     try {
+//         connectSocket()
+//         const response = await api.post('/room/matchmaking', {
+//             user: {
+//                 id: session?.id,
+//                 username: session?.username,
+//                 avatar: ''
+//             },
+//             level: 1,
+//             prompt: formData
+//         })
 
-    //         await new Promise(resolve => setTimeout(resolve, 1800))
-    //         if (response.data.code) {
-    //             router.push(`/quiz/${response.data.code}`)
-    //         }
-    //     } catch (error: any) {
-    //         toast.error('Failed to start matchmaking. Please try again later.', {
-    //             description: error?.response?.data?.message || 'An unexpected error occurred.'
-    //         })
-    //     }
-    // }, [connectSocket, session, router])
+//         await new Promise(resolve => setTimeout(resolve, 1800))
+//         if (response.data.code) {
+//             router.push(`/quiz/${response.data.code}`)
+//         }
+//     } catch (error: any) {
+//         toast.error('Failed to start matchmaking. Please try again later.', {
+//             description: error?.response?.data?.message || 'An unexpected error occurred.'
+//         })
+//     }
+// }, [connectSocket, session, router])
 
-    // const handleCancelMatchmaking = useCallback(async () => {
-    //     try {
-    //         reconnectSocket()
-    //         dispatch(setRoomMatchMakingState(null))
-    //         await api.post('/room/cancel-matchmaking', {
-    //             user: {
-    //                 id: session?.id,
-    //                 username: session?.username,
-    //                 avatar: ''
-    //             },
-    //             level: 1,
-    //         })
-    //     } catch (error: any) {
-    //         toast.error('Failed to cancel matchmaking. Please try again later.', {
-    //             description: error?.response?.data?.message || 'An unexpected error occurred.'
-    //         })
-    //     }
-    // }, [session, router])
+// const handleCancelMatchmaking = useCallback(async () => {
+//     try {
+//         reconnectSocket()
+//         dispatch(setRoomMatchMakingState(null))
+//         await api.post('/room/cancel-matchmaking', {
+//             user: {
+//                 id: session?.id,
+//                 username: session?.username,
+//                 avatar: ''
+//             },
+//             level: 1,
+//         })
+//     } catch (error: any) {
+//         toast.error('Failed to cancel matchmaking. Please try again later.', {
+//             description: error?.response?.data?.message || 'An unexpected error occurred.'
+//         })
+//     }
+// }, [session, router])

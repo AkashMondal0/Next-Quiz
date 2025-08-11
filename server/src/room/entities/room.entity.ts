@@ -39,6 +39,7 @@ export class RoomSession {
     createdAt?: string;
     updatedAt?: string;
     main_data: QuestionResponse[];
+    matchDuration: number;
     prompt?: {
         topic: string;
         numberOfQuestions?: number;
@@ -48,6 +49,7 @@ export class RoomSession {
     matchRanking: {
         id: string;
         score: number;
+        isSubmitted: boolean;
     }[];
     matchEnded?: boolean;
     matchStarted?: boolean;

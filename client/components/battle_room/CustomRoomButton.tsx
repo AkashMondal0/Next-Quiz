@@ -5,12 +5,14 @@ import { Users2Icon } from 'lucide-react'
 
 interface CustomRoomButtonProps {
   onClick: () => void
+  isLoading?: boolean
 }
 
-export default function CustomRoomButton({ onClick }: CustomRoomButtonProps) {
+export default function CustomRoomButton({ onClick, isLoading }: CustomRoomButtonProps) {
   return (
     <motion.button
-      className="bg-neutral-800 border border-neutral-700 rounded-2xl p-6 hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer"
+      className={`bg-neutral-800 border border-neutral-700 rounded-2xl p-6 hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer  ${isLoading ? 'opacity-60 pointer-events-none' : 'hover:shadow-lg hover:scale-[1.02]'
+        }`}
       variants={{
         hidden: { opacity: 0, y: 20 },
         show: { opacity: 1, y: 0 },

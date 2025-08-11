@@ -20,12 +20,12 @@ export type QuizPrompt = {
   topic: string;
   numberOfQuestions?: number;
   difficulty?: "easy" | "medium" | "hard";
+  matchDuration?: number;
 };
 
-export type quizAnswerRequest = {
+export type QuizAnswerRequest = {
     answers: number[];
-    userId: string;
-    duration: number;
+    userId: string | number | any;
     code: string;
     timeTaken: number;
 }

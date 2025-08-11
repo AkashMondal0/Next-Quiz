@@ -49,6 +49,8 @@ export default function QuizResultContent({ data }: Props) {
             const rank = getRankLabel(index);
             const marks = resultMap[player.id]?.userMarks ?? 0;
             const timeTaken = resultMap[player.id]?.timeTaken ?? 0;
+            const accuracy = marks / data.main_data.length * 100;
+            const submitted = data?.matchRanking?.find((r) => r.id === player.id)?.isSubmitted ?? false;
             return (
               <Card key={player.id}>
                 <CardContent className="flex items-center gap-4 p-5">
@@ -62,8 +64,15 @@ export default function QuizResultContent({ data }: Props) {
                         <Badge variant="secondary" className="text-xs">Host</Badge>
                       )}
                     </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className={`text-xs ${submitted ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                      >{submitted?"Submitted":"Not Submitted"}</Badge>
+                    </div>
                     <p className="text-sm text-green-600 mt-1 font-medium">
                       Score: {marks} / {data.main_data.length}
+                    </p>
+                    <p className="text-sm text-blue-600">
+                      Accuracy: {accuracy.toFixed(2)}%
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Time Taken: {timeTaken} sec

@@ -7,6 +7,7 @@ import { QuizBattleFormData } from '@/types'
 interface QuickMatchButtonProps {
   isLoading: boolean
   onClick: (formData: QuizBattleFormData) => void
+  roomSize: number
 }
 
 export default function QuickMatchButton({ isLoading, onClick }: QuickMatchButtonProps) {
@@ -17,13 +18,13 @@ export default function QuickMatchButton({ isLoading, onClick }: QuickMatchButto
     numberOfQuestions: 10,
     participantLimit: 2,
     roomCode: '',
+    matchDuration: 0
   }
 
   return (
     <motion.button
-      className={`bg-neutral-800 border border-neutral-700 rounded-2xl p-6 transition-all cursor-pointer ${
-        isLoading ? 'opacity-60 pointer-events-none' : 'hover:shadow-lg hover:scale-[1.02]'
-      }`}
+      className={`bg-neutral-800 border border-neutral-700 rounded-2xl p-6 transition-all cursor-pointer ${isLoading ? 'opacity-60 pointer-events-none' : 'hover:shadow-lg hover:scale-[1.02]'
+        }`}
       onClick={() => onClick(defaultFormData)}
       variants={{
         hidden: { opacity: 0, y: 20 },
@@ -40,8 +41,8 @@ export default function QuickMatchButton({ isLoading, onClick }: QuickMatchButto
       </h2>
       <p className="text-sm text-neutral-400 mt-1">
         {isLoading
-          ? 'Looking for a random opponent...'
-          : 'Instantly match with a random player.'}
+          ? 'Searching for random topics and players...'
+          : 'Instantly match with a random player and topic.'}
       </p>
     </motion.button>
   )

@@ -5,15 +5,14 @@ import { RootState } from "@/store";
 import {
     createContext,
     useCallback,
-    useEffect,
     useRef,
     useState,
 } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from 'sonner'
 import { io, Socket } from "socket.io-client";
-import { RoomMatchMakingState, RoomSession, RoomSessionActivityData } from "@/types";
-import { setRoomMatchMakingState, setRoomSession, setRoomSessionScore, setRoomSessionStart, setRoomSessionSubmit } from "@/store/features/room/RoomSlice";
+import { RoomSession, RoomSessionActivityData } from "@/types";
+import { setRoomSession, setRoomSessionScore, setRoomSessionStart, setRoomSessionSubmit } from "@/store/features/room/RoomSlice";
 
 interface SocketStateType {
     socket: Socket | null
@@ -53,18 +52,11 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
             // toast.error("Socket disconnected");
         });
 
-        socket.on(event_name.event.roomCreated, (data: RoomMatchMakingState) => {
-            // console.log("Room created event received:", data);
-            dispatch(setRoomMatchMakingState(data));
-        });
-
         socket.on(event_name.event.roomActivity, (data: RoomSessionActivityData) => {
+            // console.log("Room activity event received:", data);
             switch (data.type) {
                 case "quiz_answer":
                     dispatch(setRoomSessionScore(data));
-                    break;
-                case "quiz_submit":
-                    dispatch(setRoomSessionSubmit());
                     break;
                 case "quiz_start":
                     dispatch(setRoomSessionStart(data));
@@ -85,7 +77,6 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
 
         socket.off('connect');
         socket.off('disconnect');
-        socket.off(event_name.event.roomCreated);
         socket.off(event_name.event.roomActivity);
         socket.off(event_name.event.roomData);
     }, []);
@@ -114,7 +105,6 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
             socketRef.current = null;
             setIsConnected(false);
         }
-        dispatch(setRoomMatchMakingState(null));
         // toast.info("Socket disconnected");
     }, [removeListeners]);
 
