@@ -1,15 +1,18 @@
 'use client'
-
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useCallback, useContext, useEffect } from 'react'
 import { useAxios } from '@/lib/useAxios'
-import { RoomSession } from '@/types'
-import { useDispatch } from 'react-redux'
+import { RoomSession, RoomSessionActivityData } from '@/types'
 import { setRoomSession } from '@/store/features/room/RoomSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '@/store'
+import { SocketContext } from '@/provider/socket-provider'
+import { toast } from 'sonner'
+import { event_name } from '@/config/app-details'
+import { useRouter } from 'next/navigation'
+import api from '@/lib/axios'
 import dynamic from 'next/dynamic'
-import { useDebounce } from '@/lib/useDebounce'
-
-const MatchScreen = dynamic(() => import('@/components/quiz/MatchScreen'))
-const BattleRoomLoadingScreen = dynamic(() => import('@/components/quiz/BattleRoomLoadingScreen'))
+import MatchScreen from '@/components/quiz/QuizMatchComponent'
+import RoomPrepareComponent from '@/components/battle_room/RoomPrepareComponent'
 
 type PageProps = {
     params: {
@@ -18,30 +21,83 @@ type PageProps = {
 }
 
 const Page = ({ params: { id } }: PageProps) => {
+    const router = useRouter()
+    const roomSession = useSelector((Root: RootState) => Root.RoomState.roomSession)
+    const session = useSelector((Root: RootState) => Root.AccountState.session)
+    const { disconnectSocket, reconnectSocket, sendDataToServer } = useContext(SocketContext)
     const dispatch = useDispatch()
-    const { data, error, refetch } = useAxios<RoomSession>({
+    const { data, error, loading } = useAxios<RoomSession>({
         url: `/room/${id}`,
         method: 'get',
     })
 
-    const [matchStarted, setMatchStarted] = useState(false)
+    const startMatch = useCallback(() => {
+        if (roomSession?.players && roomSession?.players.length > 1) {
+            const _sData: RoomSessionActivityData = {
+                id: roomSession.id,
+                members: roomSession.players.map(player => player.id),
+                code: roomSession.code,
+                type: "quiz_start",
+                totalAnswered: 0,
+                score: 0
+            }
+            sendDataToServer(event_name.event.roomActivity, _sData)
+        } else {
+            toast.error('Not enough players to start the match.')
+        }
+    }, [roomSession, sendDataToServer])
 
-    const triggerStartMatch = useCallback(() => {
-        // setMatchStarted(true)
-        // refetch()
-    }, [refetch])
 
-    const debouncedRefetch = useDebounce(refetch, 2000)
+    const leaveRoom = useCallback(async () => {
+        //   custom-leave
+        if (!session || !session.id || !session.username || !roomSession?.code) {
+            toast.error('You must be logged in to leave a custom room.')
+            return
+        }
+        try {
+            await api.post(`/room/custom-leave/${roomSession?.code}`, {
+                user: {
+                    id: session?.id,
+                    username: session?.username,
+                    avatar: ''
+                },
+            })
+
+        } catch (error: any) {
+            toast.error('Failed to start matchmaking. Please try again later.', {
+                description: error?.response?.data?.message || 'An unexpected error occurred.'
+            })
+        } finally {
+            router.back();
+        }
+    }, [roomSession])
 
     useEffect(() => {
         if (data) {
-            dispatch(setRoomSession(data))
-
-            // if (data?.main_data?.length <= 0) {
-            //     debouncedRefetch()
-            // }
+            dispatch(setRoomSession(data));
         }
-    }, [data, debouncedRefetch])
+    }, [data])
+
+    useEffect(() => {
+        reconnectSocket()
+        const handleBeforeUnload = () => {
+            disconnectSocket()
+        }
+
+        window.addEventListener("beforeunload", handleBeforeUnload)
+        return () => {
+            disconnectSocket()
+            window.removeEventListener("beforeunload", handleBeforeUnload)
+        }
+    }, [])
+
+    if (loading) {
+        return <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 flex-col">
+            <h1 className="text-4xl font-extrabold tracking-widest drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] mb-2">
+                Loading...
+            </h1>
+        </div>
+    }
 
     if (data?.matchEnded) {
         return (
@@ -54,10 +110,6 @@ const Page = ({ params: { id } }: PageProps) => {
                 </p>
             </div>
         )
-    }
-
-    if (matchStarted && data && !data?.matchEnded) {
-        return <MatchScreen data={data} />
     }
 
     if (error) {
@@ -73,14 +125,14 @@ const Page = ({ params: { id } }: PageProps) => {
         )
     }
 
-    return (
-        <div className="relative w-full h-full">
-            <BattleRoomLoadingScreen
-                players={data?.players || []}
-                triggerStartMatch={triggerStartMatch}
-            />
-        </div>
-    )
+    if (roomSession?.matchStarted) {
+        return <MatchScreen data={roomSession} />
+    }
+
+    return <RoomPrepareComponent roomSession={roomSession}
+        startMatch={startMatch} leaveRoom={leaveRoom} />
 }
 
-export default Page
+export default Page;
+
+

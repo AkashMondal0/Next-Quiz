@@ -1,15 +1,13 @@
 
-import { RoomMatchMakingState, RoomSession, RoomSessionActivityData } from '@/types';
+import { RoomSession, RoomSessionActivityData } from '@/types';
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 
 const initialState: RoomState = {
-  roomMatchMakingState: null,
   roomSession: null,
 }
 
 export type RoomState = {
-  roomMatchMakingState: RoomMatchMakingState | null;
   roomSession: RoomSession | null;
 }
 
@@ -17,14 +15,13 @@ export const RoomSlice = createSlice({
   name: 'Room',
   initialState,
   reducers: {
-    setRoomMatchMakingState: (state, action: PayloadAction<RoomMatchMakingState | null>) => {
-      state.roomMatchMakingState = action.payload;
-    },
-    clearRoomMatchMakingState: (state) => {
-      state.roomMatchMakingState = null;
-    },
     setRoomSession: (state, action: PayloadAction<RoomSession | null>) => {
       state.roomSession = action.payload;
+    },
+    setRoomSessionStart: (state, action: PayloadAction<RoomSessionActivityData>) => {
+      if (state.roomSession && state.roomSession.code === action.payload.code) {
+        state.roomSession.matchStarted = true;
+      }
     },
     setRoomSessionScore: (state, action: PayloadAction<RoomSessionActivityData>) => {
       if (state.roomSession?.matchRanking && state.roomSession.code === action.payload.code) {
@@ -60,11 +57,10 @@ export const RoomSlice = createSlice({
 })
 
 export const {
-  setRoomMatchMakingState,
-  clearRoomMatchMakingState,
   setRoomSession,
   setRoomSessionScore,
-  setRoomSessionSubmit
+  setRoomSessionSubmit,
+  setRoomSessionStart
 } = RoomSlice.actions
 
 export default RoomSlice.reducer

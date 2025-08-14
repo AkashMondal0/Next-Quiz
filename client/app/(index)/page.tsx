@@ -1,93 +1,45 @@
 'use client'
 
-import React, { useEffect, useContext, useCallback } from 'react'
+import React, { useEffect, useContext, useCallback, useState } from 'react'
 import api from '@/lib/axios'
 import { toast } from 'sonner'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
 import { useRouter } from 'next/navigation'
 import { SocketContext } from '@/provider/socket-provider'
-import { setRoomMatchMakingState } from '@/store/features/room/RoomSlice'
 import dynamic from 'next/dynamic'
-import { QuizBattleFormData } from '@/types'
+import { QuizBattleFormData } from '@/types/quizBattle'
+import QuizGenerationLoader from '@/components/room/QuizGenerationLoader'
+import { Loader2 } from 'lucide-react'
+const Loading = () => <div className="flex justify-center items-center h-screen"><Loader2 className='animate-spin' size={32} /></div>;
 
-const MatchmakingLoadingScreen = dynamic(() => import('@/components/quiz/MatchmakingLoadingScreen'), { ssr: false })
-const LoginComponent = dynamic(() => import('@/components/quiz/LoginComponent'), { ssr: false })
-const SelectMatchComponent = dynamic(() => import('@/components/room/SelectMatchComponent'), { ssr: false })
-
+const LoginComponent = dynamic(() => import('@/components/quiz/LoginComponent'), {
+    ssr: false,
+    loading: () => <Loading />
+})
+const SelectMatchComponent = dynamic(() => import('@/components/room/SelectMatchComponent'), {
+    ssr: false,
+    loading: () => <Loading />
+})
 
 const Page = () => {
-    const { reconnectSocket, disconnectSocket, connectSocket } = useContext(SocketContext)
-    const roomMatchMakingState = useSelector((Root: RootState) => Root.RoomState.roomMatchMakingState)
+    const { disconnectSocket, connectSocket } = useContext(SocketContext)
     const session = useSelector((Root: RootState) => Root.AccountState.session)
     const router = useRouter()
-    const dispatch = useDispatch()
+    const [loading, setLoading] = useState(false)
 
-    const handleStartMatchmaking = useCallback(async (roomSize: number = 2, formData: QuizBattleFormData = {
+    const handleCustomRoom = useCallback(async (formData: QuizBattleFormData = {
         topic: "General Knowledge",
         difficulty: "medium",
         numberOfQuestions: 2,
-        participantLimit: roomSize
+        participantLimit: 2
     }) => {
         if (!session || !session.id || !session.username) {
             toast.error('You must be logged in to start matchmaking.')
             return
         }
         try {
-            connectSocket()
-            const response = await api.post('/room/matchmaking', {
-                user: {
-                    id: session?.id,
-                    username: session?.username,
-                    avatar: ''
-                },
-                level: 1,
-                roomSize: roomSize,
-                prompt: formData
-            })
-
-            await new Promise(resolve => setTimeout(resolve, 1800))
-            if (response.data.code) {
-                router.push(`/quiz/${response.data.code}`)
-            }
-        } catch (error: any) {
-            toast.error('Failed to start matchmaking. Please try again later.', {
-                description: error?.response?.data?.message || 'An unexpected error occurred.'
-            })
-        }
-    }, [connectSocket, session, router])
-
-    const handleCancelMatchmaking = useCallback(async (roomSize: number = 2) => {
-        try {
-            reconnectSocket()
-            dispatch(setRoomMatchMakingState(null))
-            await api.post('/room/cancel-matchmaking', {
-                user: {
-                    id: session?.id,
-                    username: session?.username,
-                    avatar: ''
-                },
-                level: 1,
-                roomSize: roomSize
-            })
-        } catch (error: any) {
-            toast.error('Failed to cancel matchmaking. Please try again later.', {
-                description: error?.response?.data?.message || 'An unexpected error occurred.'
-            })
-        }
-    }, [session, router])
-
-    const handleCustomRoom = useCallback(async (roomSize: number = 2, formData: QuizBattleFormData = {
-        topic: "General Knowledge",
-        difficulty: "medium",
-        numberOfQuestions: 2,
-        participantLimit: roomSize
-    }) => {
-        if (!session || !session.id || !session.username) {
-            toast.error('You must be logged in to start matchmaking.')
-            return
-        }
-        try {
+            setLoading(true)
             const response = await api.post('/room/custom', {
                 user: {
                     id: session?.id,
@@ -95,7 +47,7 @@ const Page = () => {
                     avatar: ''
                 },
                 level: 1,
-                roomSize: roomSize,
+                roomSize: formData.participantLimit,
                 prompt: formData
             })
 
@@ -110,10 +62,32 @@ const Page = () => {
         }
     }, [connectSocket, session, router])
 
+    const handleJoinCustomRoom = useCallback(async (input: string) => {
+        if (!session || !session.id || !session.username) {
+            toast.error('You must be logged in to join a custom room.')
+            return
+        }
+        try {
+            const res = await api.post(`/room/custom-join/${input}`, {
+                user: {
+                    id: session?.id,
+                    username: session?.username,
+                    avatar: ''
+                },
+            })
+            if (res.data.code) {
+                router.push(`/quiz/room/${res.data.code}`)
+            }
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || 'Failed to start matchmaking. Please try again later.', {
+                description: error?.response?.data?.message || 'An unexpected error occurred.'
+            })
+        }
+    }, [session, router])
+
     useEffect(() => {
         const handleBeforeUnload = () => {
             disconnectSocket()
-            handleCancelMatchmaking()
         }
 
         window.addEventListener("beforeunload", handleBeforeUnload)
@@ -123,28 +97,23 @@ const Page = () => {
         }
     }, [])
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (roomMatchMakingState?.status === "ready") {
-                router.replace(`/quiz/${roomMatchMakingState.code}`)
-            }
-        }, 1800)
-
-        return () => clearTimeout(timer)
-    }, [roomMatchMakingState, router])
-
     if (!session || !session.id || !session.username) {
         return (
             <LoginComponent />
         );
     }
 
+    if (loading) {
+        return <QuizGenerationLoader />;
+    }
+
     return (
-        <div className="min-h-screen h-screen bg-gradient-to-br from-black via-neutral-900 to-black flex items-center justify-center p-6">
-            {roomMatchMakingState ?
-                <MatchmakingLoadingScreen data={roomMatchMakingState} cancelMatchmaking={handleCancelMatchmaking} />
-                :
-                <SelectMatchComponent handleStartMatchmaking={handleStartMatchmaking} handleCustomRoom={handleCustomRoom} />}
+        <div className="min-h-screen bg-gradient-to-br from-black via-neutral-900 to-black">
+            <SelectMatchComponent
+                loading={loading}
+                handleCustomRoom={handleCustomRoom}
+                handleJoinCustomRoom={handleJoinCustomRoom}
+            />
         </div>
     );
 }

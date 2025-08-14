@@ -20,19 +20,19 @@ export type QuizPrompt = {
   topic: string;
   numberOfQuestions?: number;
   difficulty?: "easy" | "medium" | "hard";
+  matchDuration?: number;
 };
 
-export type quizAnswerRequest = {
+export type QuizAnswerRequest = {
     answers: number[];
-    userId: string;
-    duration: number;
+    userId: string | number | any;
     code: string;
     timeTaken: number;
 }
 
 export type RoomSessionActivityData = {
-    type: "quiz_submit" | "quiz_answer";
-    members: string[];
+   type: "quiz_submit" | "quiz_answer" | "quiz_start" | "quiz_result_update" | "quiz_leave";
+    members: (string | number)[];
     id: string | number | undefined;
     totalAnswered: number;
     code?: string;

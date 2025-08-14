@@ -24,7 +24,7 @@ export default function BattleRoomLoadingScreen({
     }, [countdown, triggerStartMatch])
 
     return (
-        <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
+        <>
             <motion.div
                 className="w-full max-w-6xl text-center space-y-8"
                 initial={{ opacity: 0, y: 30 }}
@@ -78,6 +78,6 @@ export default function BattleRoomLoadingScreen({
                     ))}
                 </div>
             </motion.div>
-        </div>
+        </>
     )
 }

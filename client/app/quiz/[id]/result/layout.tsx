@@ -9,8 +9,8 @@ export default function RootLayout({ children }: {
     children: React.ReactNode
 }) {
     return (
-        <>
+        <div className="w-full bg-gradient-to-b from-black via-neutral-900 to-black text-white">
             {children}
-        </>
+        </div>
     )
 }

@@ -14,7 +14,7 @@ export type TemporaryUser = {
     username: string;
 }
 
-export type RoomMatchMakingState = {
+export type MatchmakingResponse = {
     code: string | null;
     players: TemporaryUser[];
     status: "waiting" | "joining" | "ready";
@@ -23,8 +23,8 @@ export type RoomMatchMakingState = {
 }
 
 export type RoomSessionActivityData = {
-    type: "quiz_submit" | "quiz_answer";
-    members: string[];
+    type: "quiz_submit" | "quiz_answer" | "quiz_start" | "quiz_result_update" | "quiz_leave";
+    members: (string | number)[];
     id: string | number | undefined;
     totalAnswered: number;
     code?: string;
@@ -39,6 +39,7 @@ export type QuizPrompt = {
     topic: string;
     numberOfQuestions?: number;
     difficulty?: "easy" | "medium" | "hard";
+    participantLimit?: number;
 };
 export type RoomSession = {
     id: string;
@@ -53,7 +54,10 @@ export type RoomSession = {
     matchRanking?: {
         id: string;
         score: number;
+        isSubmitted: boolean;
     }[];
+    matchStarted: boolean;
+    prompt: QuizPrompt;
     matchEnded: boolean;
     matchDuration: number;
     matchResults: {
@@ -78,4 +82,6 @@ export type QuizBattleFormData = {
     difficulty: "easy" | "medium" | "hard"
     numberOfQuestions: number
     participantLimit: number
+    roomCode: string
+    matchDuration: number // in seconds, default is 600 (10 minutes)
 }

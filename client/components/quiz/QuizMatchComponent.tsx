@@ -25,6 +25,8 @@ import { event_name } from '@/config/app-details'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import CountdownTimer from '../CountdownTimer'
+import api from '@/lib/axios'
+import { toast } from 'sonner'
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -62,6 +64,7 @@ const MatchScreen = ({ data }: { data: RoomSession | undefined | null }) => {
     const [isRankOpen, setIsRankOpen] = useState(false)
     const [answeredIndexes, setAnsweredIndexes] = useState<Set<number>>(new Set())
     const startTimeRef = useRef<number | null>(null)
+    const isSubmittingRef = useRef<boolean>(false)
 
     const ResultPath = `/quiz/${data?.code}/result`
 
@@ -104,37 +107,70 @@ const MatchScreen = ({ data }: { data: RoomSession | undefined | null }) => {
         }
     }
 
-    const handleSubmitAnswers = async (formData: any) => {
-        const score = userScore()
-        const totalAnswered = Object.keys(formData).length
-        const timeTaken = startTimeRef.current ? Math.floor((Date.now() - startTimeRef.current) / 1000) : 0
+    const handleSubmitAnswers = useCallback(async (formData: any) => {
+        if (isSubmittingRef.current) return
+        isSubmittingRef.current = true
+        try {
+            const timeTaken = startTimeRef.current ? Math.floor((Date.now() - startTimeRef.current) / 1000) : 0
 
-        setSubmitted(true)
+            const answersArr: number[] = Object.keys(formData).map((key) => {
+                const qIndex = parseInt(key.replace('q', ''), 10)
+                const chosen = formData[key] as string | undefined
+                if (chosen === undefined) return -1
+                return data?.main_data?.[qIndex]?.options.indexOf(chosen) ?? -1
+            })
 
-        sendDataToServer(event_name.event.roomActivity, {
-            type: 'quiz_submit',
-            members: data?.players.map((player) => player.id),
-            id: session?.id,
-            code: data?.code,
-            totalAnswered,
-            score,
-            timeTaken, // 👈 send time spent in seconds
-        })
+            const quizAnswers: quizAnswerRequest = {
+                answers: answersArr,
+                userId: session?.id || '',
+                code: data?.code || '',
+                timeTaken,
+            }
 
-        const quizAnswers: quizAnswerRequest = {
-            answers: Object.keys(formData).map((key) => {
-                const questionIndex = parseInt(key.replace('q', ''), 10)
-                return data?.main_data?.[questionIndex]?.options.indexOf(formData[key]) ?? -1
-            }),
-            userId: session?.id || '',
-            code: data?.code || '',
-            timeTaken: timeTaken
+            // send to server
+            await api.post('/room/submit-answers', quizAnswers)
+            // navigate to result (replace so back won't resubmit)
+            router.replace(ResultPath)
+        } catch (err) {
+            toast.error('Failed to submit answers')
+        } finally {
+            isSubmittingRef.current = false
+            setSubmitted(false)
         }
+    }, [data, session?.id, router, ResultPath])
 
-        sendDataToServer(event_name.event.roomEnded, quizAnswers)
-        await new Promise((resolve) => setTimeout(resolve, 1800))
-        router.replace(ResultPath)
-    }
+
+    // const handleSubmitAnswers = async (formData: any) => {
+    //     const score = userScore()
+    //     const totalAnswered = Object.keys(formData).length
+    //     const timeTaken = startTimeRef.current ? Math.floor((Date.now() - startTimeRef.current) / 1000) : 0
+
+    //     setSubmitted(true)
+
+    //     sendDataToServer(event_name.event.roomActivity, {
+    //         type: 'quiz_submit',
+    //         members: data?.players.map((player) => player.id),
+    //         id: session?.id,
+    //         code: data?.code,
+    //         totalAnswered,
+    //         score,
+    //         timeTaken, // 👈 send time spent in seconds
+    //     })
+
+    //     const quizAnswers: quizAnswerRequest = {
+    //         answers: Object.keys(formData).map((key) => {
+    //             const questionIndex = parseInt(key.replace('q', ''), 10)
+    //             return data?.main_data?.[questionIndex]?.options.indexOf(formData[key]) ?? -1
+    //         }),
+    //         userId: session?.id || '',
+    //         code: data?.code || '',
+    //         timeTaken: timeTaken
+    //     }
+
+    //     sendDataToServer(event_name.event.roomEnded, quizAnswers)
+    //     await new Promise((resolve) => setTimeout(resolve, 1800))
+    //     router.replace(ResultPath)
+    // }
 
     // const autoSubmit = useCallback(() => {
     //     if (!submitted && roomSession?.matchEnded && session?.id) {
@@ -161,7 +197,7 @@ const MatchScreen = ({ data }: { data: RoomSession | undefined | null }) => {
 
     return (
         <div className="p-6 min-h-screen bg-gradient-to-b from-black via-neutral-900 to-black text-white">
-            
+
             {/* Header */}
             <header className="mb-8">
                 <h1 className="text-4xl font-bold mb-2">Match Quiz</h1>

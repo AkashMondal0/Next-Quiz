@@ -1,4 +1,4 @@
-import { RoomMatchMakingState } from "@/types"
+
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,7 @@ export default function MatchmakingLoadingScreen({
     data
 }: {
     cancelMatchmaking: () => void,
-    data: RoomMatchMakingState
+    data: any
 }) {
     const [stepIndex, setStepIndex] = useState(0)
     const steps = [
@@ -32,7 +32,7 @@ export default function MatchmakingLoadingScreen({
     }, [stepIndex])
 
     return (
-        <div className="flex flex-col items-center space-y-10 text-white">
+        <div className="min-h-screen flex flex-col items-center space-y-10 text-white justify-center">
             {/* Battle Logo */}
             <motion.div
                 className="text-center text-5xl md:text-6xl font-extrabold text-white tracking-widest select-none relative"
@@ -76,7 +76,7 @@ export default function MatchmakingLoadingScreen({
                     }
                 }}
             >
-                {data.players.map((player, index) => (
+                {data.players.map((player:any, index:any) => (
                     <motion.div
                         key={player.id || index}
                         className="flex flex-col items-center space-y-2 p-4 bg-neutral-800 rounded-2xl shadow-md"

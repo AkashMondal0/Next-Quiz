@@ -8,6 +8,7 @@ import { Toaster } from '@/components/ui/sonner'
 export const metadata: Metadata = {
   title: 'Quiz Battle',
   description: 'Set up your quiz battle with customizable parameters',
+  themeColor: '#000',
 }
 
 export default function RootLayout({ children }: {
@@ -20,7 +21,6 @@ export default function RootLayout({ children }: {
         <body>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           >
