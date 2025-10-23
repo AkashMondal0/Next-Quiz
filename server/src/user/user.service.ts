@@ -1,68 +1,55 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { like, or } from 'drizzle-orm';
+import { dataParser } from 'src/lib/dataParser';
 import { DrizzleProvider } from 'src/lib/db/drizzle/drizzle.provider';
 import { UserSchema } from 'src/lib/db/drizzle/drizzle.schema';
-import { inArray } from 'drizzle-orm';
-import { TemporaryUser } from 'src/lib/types';
-import { RedisProvider } from 'src/lib/db/redis/redis.provider';
+import { RedisService } from 'src/lib/db/redis/redis.service';
 
 @Injectable()
 export class UserService {
   constructor(
+    private readonly redisService: RedisService,
     private readonly drizzleProvider: DrizzleProvider,
-    private readonly redisProvider: RedisProvider,
   ) { }
-  
-  async getUsersByIds(ids: number[]): Promise<TemporaryUser[]> {
-    if (!ids.length) return [];
+  getHello(): string {
+    return 'Hello World!';
+  }
 
-    const pipeline = this.redisProvider.client.multi();
-    const keys = ids.map(id => `user:${id}`);
+  async getUserByKeyword(userKeyword: string) {
+    try {
+      const keywordForUsername = userKeyword.toLowerCase().trim();
+      const keywordForName = userKeyword.trim();
+      const searchKey = `search:users:${keywordForUsername + keywordForName}`;
 
-    for (const key of keys) {
-      pipeline.hgetall(key);
-    }
-
-    const rawResults = await pipeline.exec();
-
-    if (!rawResults) return [];
-
-    const users: TemporaryUser[] = [];
-
-    rawResults.forEach((result, index) => {
-      const [err, data] = result as [Error | null, Record<string, string>];
-
-      if (!err && data && data.id && data.username) {
-        users.push({
-          id: Number(data.id),
-          username: data.username,
-          avatar: data.avatar,
-        });
+      let results = await this.redisService.client.get(searchKey);
+      if (results) {
+        return dataParser(results);
       }
-    });
 
-    return users;
-  }
-  async cacheUser(user: TemporaryUser): Promise<void> {
-    const userKey = `user:${user.id}`;
-    await this.redisProvider.client.hset(userKey, {
-      id: user.id.toString(),
-      username: user.username,
-      avatar: user.avatar,
-    });
-  }
-  async cacheUsers(users: TemporaryUser[]): Promise<void> {
-    const pipeline = this.redisProvider.client.multi();
+      const data = await this.drizzleProvider.db.select({
+        id: UserSchema.id,
+        username: UserSchema.username,
+        email: UserSchema.email,
+        name: UserSchema.name,
+        profilePicture: UserSchema.profilePicture,
+        bio: UserSchema.bio,
+        website: UserSchema.website,
+        publicKey: UserSchema.publicKey,
+      }).from(UserSchema).where(
+        or(
+          like(UserSchema.username, `%${keywordForUsername}%`),
+          like(UserSchema.name, `%${keywordForName}%`)
+        )
+      ).limit(20)
 
-    for (const user of users) {
-      const userKey = `user:${user.id}`;
-      pipeline.hset(userKey, {
-        id: user.id.toString(),
-        username: user.username,
-        avatar: user.avatar,
-      });
+      if (data.length <= 0 || !data[0].id) {
+        return [];
+      }
+      await this.redisService.client.set(searchKey, JSON.stringify(data), 'EX', 60); // short TTL
+      return data;
+    } catch (error) {
+      Logger.error(error)
+      return [];
     }
-
-    await pipeline.exec();
   }
-
 }

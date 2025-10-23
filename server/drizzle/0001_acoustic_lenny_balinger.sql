@@ -1,1 +1,0 @@
-ALTER TABLE "rooms" ALTER COLUMN "host_id" SET DATA TYPE varchar(10);

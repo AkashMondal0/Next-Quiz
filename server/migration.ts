@@ -4,6 +4,9 @@ import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 
 const connectionString = process.env.PG_URL as string;
+if(!connectionString) {
+    throw new Error("PG_URL is not defined in environment variables");
+}
 const postgresClient = postgres(connectionString, { max: 1 });
 const postgresDb = drizzle(postgresClient);
 

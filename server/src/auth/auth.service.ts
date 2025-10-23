@@ -1,15 +1,21 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { RegisterUserPayload } from 'src/lib/validation/ZodSchema';
+import { RegisterUserPayload } from 'src/lib/validation/AuthZodSchema';
 import { eq, or } from 'drizzle-orm';
 import { DrizzleProvider } from 'src/lib/db/drizzle/drizzle.provider';
-import { RedisProvider } from 'src/lib/db/redis/redis.provider';
 import { Request, Response } from 'express';
 import { comparePassword, createHash } from 'src/lib/bcrypt/bcrypt.function';
 import { AccountSchema, UserPasswordSchema, UserSchema, UserSettingsSchema } from 'src/lib/db/drizzle/drizzle.schema';
 import { generateRSAKeyPair } from 'src/lib/crypto/encrypt.decrypt';
 import { Author } from './entities/author.entity';
 import { User } from './entities/user.entity';
+import { generateRandomString } from 'src/lib/id-generator';
+import configuration from 'src/lib/configs/configuration';
+import { RedisService } from 'src/lib/db/redis/redis.service';
+
+if (!configuration().COOKIE_NAME) {
+  throw new Error('COOKIE_NAME must be defined in environment variables');
+}
 
 export interface SignUpAndSignInResponse {
   id: string,
@@ -25,8 +31,13 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly drizzleProvider: DrizzleProvider,
-    private readonly redisProvider: RedisProvider
+    private readonly redisService: RedisService,
   ) { }
+
+  async validateOAuthLogin(user: any): Promise<string> {
+    const payload = { email: user.email, sub: user.email };
+    return this.jwtService.sign(payload);
+  }
   // 
   async signIn(response: Response, email: string, pass: string): Promise<SignUpAndSignInResponse | HttpException> {
     const user = await this.findUserAndPassword(email);
@@ -48,15 +59,14 @@ export class AuthService {
       id: user.id,
       email: user.email,
       name: user.name,
-      bio: user.bio ?? "",
-      website: user.website ?? [],
       profilePicture: user.profilePicture,
     }
 
     const accessToken = await this.jwtService.signAsync(userinfo, { expiresIn: '30d' });
+    await this.redisService.client.set(`chat:user:${userinfo.id}:privateKey`, user.privateKey);
     // save session to redis
 
-    response.cookie('sky.inc-token', accessToken, {
+    response.cookie(configuration().COOKIE_NAME, accessToken, {
       path: "/",
       maxAge: 1000 * 60 * 60 * 24 * 30,
       httpOnly: true,
@@ -93,14 +103,13 @@ export class AuthService {
       email: newUser.email,
       name: newUser.name,
       id: newUser.id,
-      bio: "",
-      website: [],
       profilePicture: newUser.profilePicture,
     }
     const accessToken = await this.jwtService.signAsync(userinfo, { expiresIn: '30d' });
+    await this.redisService.client.set(`chat:user:${userinfo.id}:privateKey`, newUser.privateKey);
     // save session to redis
 
-    response.cookie('sky.inc-token', accessToken, {
+    response.cookie(configuration().COOKIE_NAME, accessToken, {
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 30,
       httpOnly: true,
@@ -119,11 +128,62 @@ export class AuthService {
 
   async signOut(request: Request, response: Response, session: Author): Promise<any | HttpException> {
 
-    this.redisProvider.client.del(`notification:${session.id}`);
+    // this.redisProvider.client.del(`notification:${session.id}`);
     for (const [key] of Object.entries(request.cookies)) {
       response.clearCookie(key)
     }
     return response.send("Logged Out Successfully")
+  }
+
+  async googleOAuthLogin(user: {
+    email: string
+    firstName: string
+    lastName: string
+    picture: string
+  }): Promise<User & {
+    accessToken: string
+  } | null> {
+
+    const findUser = await this.findUserAndPassword(user.email);
+
+    if (!findUser) {
+      // register the user
+      const newUser = await this.createUser({
+        email: user.email,
+        name: `${user.firstName} ${user.lastName}`,
+        username: user.email.split('@')[0],
+        password: generateRandomString(12, 'uppernumeric'),
+      });
+
+      if (!newUser) {
+        throw new HttpException('Failed to create user', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+
+      const userinfo = {
+        username: newUser.username,
+        email: newUser.email,
+        name: newUser.name,
+        id: newUser.id,
+        profilePicture: newUser?.profilePicture,
+      }
+
+      const accessToken = await this.jwtService.signAsync(userinfo, { expiresIn: '30d' });
+      await this.redisService.client.set(`chat:user:${userinfo.id}:privateKey`, newUser.privateKey);
+
+      return { ...newUser, accessToken };
+    }
+    const userinfo = {
+      username: findUser.username,
+      email: findUser.email,
+      name: findUser.name,
+      id: findUser.id,
+      bio: findUser.bio ?? "",
+      website: findUser.website ?? [],
+      profilePicture: findUser?.profilePicture,
+    }
+    const accessToken = await this.jwtService.signAsync(userinfo, { expiresIn: '30d' });
+
+    return { ...findUser, accessToken };
   }
 
   async findUserAndPassword(email: string): Promise<{
@@ -234,6 +294,14 @@ export class AuthService {
         id: newUser[0].id,
       });
 
+      // const aName = userCredential.name?.trim().length ? userCredential.name.trim() : userCredential.username;
+      // await this.drizzleProvider.db.insert(ChannelSchema).values({
+      //   // id: `@${aName.replace(/\s+/g, '').toLowerCase()}-${generateRandomString(6, 'lowernumeric')}`,
+      //   avatarUrl: userCredential.profilePicture || "",
+      //   name: aName,
+      //   userId: newUser[0].id,
+      // });
+
       if (!newUser[0].id) {
         return null;
       };
@@ -243,5 +311,9 @@ export class AuthService {
       Logger.error(`createUser Error:`, error)
       return null
     }
+  }
+
+  async passwordReset() {
+    // to be implemented
   }
 }

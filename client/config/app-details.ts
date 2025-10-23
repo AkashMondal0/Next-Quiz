@@ -10,17 +10,8 @@ export const appInfo = Object.freeze({
         "application"
     ],
     apiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1",
+    wsUrl: process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:5000",
+    supabaseBucket: process.env.NEXT_PUBLIC_SUPABASE_BUCKET || "https://your_supabase_project_url.supabase.co/storage/v1/object/public/next-stream",
     appUrl: "http://localhost:3000",
     supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "",
 });
-
-export const event_name = Object.freeze(
-    {
-        event: {
-            roomData: 'room_data',
-            roomCreated: 'room_created',
-            roomActivity: 'room_activity',
-            roomEnded: 'room_ended',
-        },
-    }
-)
