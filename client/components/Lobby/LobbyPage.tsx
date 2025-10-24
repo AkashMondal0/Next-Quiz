@@ -10,7 +10,7 @@ import { useParticles } from '@/utility/hooks';
 import AnimatedBackground from '../QuizApp/BackgroundBlobs';
 import { CardDescription, CardHeader, CardTitle } from '../ui/card';
 
-export default function LobbyPage() {
+export default function LobbyPage({}:{}) {
     const [isDark, setIsDark] = useState(true);
     const [copied, setCopied] = useState(false);
     const [isReady, setIsReady] = useState(false);

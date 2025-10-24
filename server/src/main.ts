@@ -3,12 +3,9 @@ import { AppModule } from './app.module';
 import { VersioningType } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import { RedisIoAdapter } from './lib/db/redis/RedisIoAdapter';
-import * as cookieParser from 'cookie-parser';
-import configuration from './lib/configs/configuration';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(cookieParser(configuration().JWT_SECRET));
 
   app.enableVersioning({
     type: VersioningType.URI,

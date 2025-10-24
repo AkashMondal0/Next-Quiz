@@ -5,7 +5,6 @@ import { Clock, Sparkles, Star } from 'lucide-react';
 
 export default function GameSettingsCard({ isDark }: { isDark: boolean }) {
   const settings = [
-    { icon: Clock, label: 'Time per question', value: '30s', color: 'purple' },
     { icon: Sparkles, label: 'Questions', value: '10', color: 'blue' },
     { icon: Star, label: 'Difficulty', value: 'Medium', color: 'yellow' },
   ];

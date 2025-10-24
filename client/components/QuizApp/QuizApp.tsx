@@ -10,24 +10,13 @@ import CreateMatchForm from './CreateMatchForm';
 // ============= MAIN APP COMPONENT =============
 export default function QuizApp() {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [roomCode, setRoomCode] = useState<string>('');
-  const [playerName, setPlayerName] = useState<string>('');
   const [isDark, setIsDark] = useState<boolean>(true);
-  const [createFormData, setCreateFormData] = useState({
-    playerName: '',
-    aiPrompt: '',
-    difficulty: 'medium',
-    participantLimit: 10,
-    duration: 10
-  });
 
   const particles = useParticles(12);
   const toggleTheme = useCallback(() => setIsDark((s) => !s), []);
   const handleOptionSelect = useCallback((option: string) => setSelectedOption(option), []);
   const handleBack = useCallback(() => {
     setSelectedOption(null);
-    setRoomCode('');
-    setPlayerName('');
   }, []);
 
   const bgClass = isDark
@@ -42,20 +31,7 @@ export default function QuizApp() {
   const textSecondaryClass = isDark ? 'text-slate-300' : 'text-gray-600';
 
   return (
-    <div className={`min-h-screen ${bgClass} flex items-center justify-center p-4 overflow-hidden relative transition-colors duration-500`}>
-      <style jsx>{`
-        @keyframes blobMove {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          25% { transform: translate(30px, -20px) scale(1.05); }
-          50% { transform: translate(-20px, 30px) scale(0.95); }
-          75% { transform: translate(20px, 20px) scale(1.03); }
-        }
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); opacity: 0.2; }
-          50% { transform: scale(1.1); opacity: 0.3; }
-        }
-      `}</style>
-
+    <div className={`min-h-screen ${bgClass} flex items-center justify-center p-2 overflow-hidden relative transition-colors duration-500 pt-5`}>
       <AnimatedBackground isDark={isDark} particles={particles} />
       <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
 
@@ -75,10 +51,6 @@ export default function QuizApp() {
               textPrimaryClass={textPrimaryClass}
               textSecondaryClass={textSecondaryClass}
               cardBgClass={cardBgClass}
-              playerName={playerName}
-              setPlayerName={setPlayerName}
-              roomCode={roomCode}
-              setRoomCode={setRoomCode}
               onBack={handleBack}
             />
           ) : (
@@ -87,8 +59,6 @@ export default function QuizApp() {
               textPrimaryClass={textPrimaryClass}
               textSecondaryClass={textSecondaryClass}
               cardBgClass={cardBgClass}
-              formData={createFormData}
-              setFormData={setCreateFormData}
               onBack={handleBack}
             />
           )}

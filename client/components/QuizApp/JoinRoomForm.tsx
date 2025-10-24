@@ -1,107 +1,204 @@
 import { motion } from "framer-motion";
-import { memo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { memo, useState } from "react";
+import { useForm } from "react-hook-form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 import { ArrowRight, Hash } from "lucide-react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { TemporaryUser } from "@/types";
 
-// ============= JOIN ROOM FORM =============
+interface JoinRoomFormValues {
+  playerName: string;
+  roomCode: string;
+}
+
 const JoinRoomForm = memo(function JoinRoomForm({
-  isDark, textPrimaryClass, textSecondaryClass, cardBgClass, playerName, setPlayerName, roomCode, setRoomCode, onBack
+  isDark,
+  textPrimaryClass,
+  textSecondaryClass,
+  cardBgClass,
+  onBack,
 }: {
-  isDark: boolean,
-  textPrimaryClass: string,
-  textSecondaryClass: string,
-  cardBgClass: string,
-  playerName: string,
-  setPlayerName: (name: string) => void,
-  roomCode: string,
-  setRoomCode: (code: string) => void,
-  onBack: () => void
+  isDark: boolean;
+  textPrimaryClass: string;
+  textSecondaryClass: string;
+  cardBgClass: string;
+  onBack: () => void;
 }) {
-  return <motion.div
-    key="join"
-    initial={{ opacity: 0, x: 80 }}
-    animate={{ opacity: 1, x: 0 }}
-    exit={{ opacity: 0, x: -80 }}
-    transition={{ type: 'spring', stiffness: 120 }}
-    className="max-w-lg mx-auto px-4"
-  >
-    <Card className={`${cardBgClass} border-2 backdrop-blur-xl shadow-xl`}>
-      <CardHeader className="space-y-4">
-        <motion.div
-          initial={{ scale: 0.95, rotate: -10 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 200 }}
-          className="relative"
-        >
-          <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-md">
-            <Hash className="w-8 h-8 text-white" />
+  const [localData, setData] = useLocalStorage<TemporaryUser>("username", {
+    id: Math.floor(1000 + Math.random() * 9000),
+    username: new Array(8).fill(null).map(() => String.fromCharCode(Math.floor(Math.random() * 26) + 97)).join(''),
+    avatar: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+  } = useForm<JoinRoomFormValues>({
+    defaultValues: { playerName: localData.username, roomCode: "" },
+  });
+
+  const handleRoomCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValue("roomCode", e.target.value.toUpperCase());
+  };
+
+  const onSubmit = (data: JoinRoomFormValues) => {
+    setIsLoading(true);
+    if (data.playerName.trim() !== localData.username) {
+      setData({
+        ...localData,
+        username: data.playerName.trim(),
+      });
+    }
+    console.log("🟣 Form Submitted:", data);
+  };
+
+  return (
+    <motion.div
+      key="join"
+      initial={{ opacity: 0, x: 80 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -80 }}
+      transition={{ type: "spring", stiffness: 120 }}
+      className="max-w-lg mx-auto"
+    >
+      <Card className={`${cardBgClass} border-2 backdrop-blur-xl shadow-xl`}>
+        <CardHeader className="space-y-4">
+          <motion.div
+            initial={{ scale: 0.95, rotate: -10 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: "spring", stiffness: 200 }}
+            className="relative"
+          >
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-md">
+              <Hash className="w-8 h-8 text-white" />
+            </div>
+            <div
+              className="absolute -inset-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl opacity-20 blur-xl"
+              style={{ animation: "pulse 2.2s infinite" }}
+            />
+          </motion.div>
+
+          <div>
+            <CardTitle
+              className={`text-2xl md:text-3xl font-bold mb-1 ${textPrimaryClass}`}
+            >
+              Join Room
+            </CardTitle>
+            <CardDescription
+              className={`text-sm md:text-base ${textSecondaryClass}`}
+            >
+              Enter the room code and your name to jump in
+            </CardDescription>
           </div>
-          <div className="absolute -inset-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl opacity-20 blur-xl" style={{ animation: 'pulse 2.2s infinite' }} />
-        </motion.div>
+        </CardHeader>
 
-        <div>
-          <CardTitle className={`text-2xl md:text-3xl font-bold mb-1 ${textPrimaryClass}`}>
-            Join Room
-          </CardTitle>
-          <CardDescription className={`text-sm md:text-base ${textSecondaryClass}`}>
-            Enter the room code and your name to jump in
-          </CardDescription>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="name" className={`text-base font-semibold ${textPrimaryClass}`}>
-            Player Name
-          </Label>
-          <Input
-            id="name"
-            placeholder="Enter your name"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            className={`h-12 text-base ${isDark ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-purple-200'
-              }`}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="code" className={`text-base font-semibold ${textPrimaryClass}`}>
-            Room Code
-          </Label>
-          <Input
-            id="code"
-            placeholder="XXXXXX"
-            value={roomCode}
-            onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-            maxLength={6}
-            className={`h-12 text-lg tracking-widest uppercase text-center font-bold ${isDark ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-purple-200'
-              }`}
-          />
-        </div>
-
-        <div className="pt-3 space-y-2">
-          <Button
-            className="w-full h-12 text-base font-bold bg-gradient-to-r from-purple-500 to-purple-600 shadow transition-all duration-200"
-            disabled={!playerName || roomCode.length !== 6}
+        <CardContent>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4"
+            noValidate
           >
-            Join Room <ArrowRight className="ml-2 w-4 h-4" />
-          </Button>
+            {/* Player Name */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="name"
+                className={`text-base font-semibold ${textPrimaryClass}`}
+              >
+                Player Name
+              </Label>
+              <Input
+                id="name"
+                placeholder="Enter your name"
+                {...register("playerName", {
+                  required: "Player name is required",
+                  minLength: {
+                    value: 2,
+                    message: "Name must be at least 2 characters",
+                  },
+                })}
+                className={`h-12 text-base ${isDark
+                    ? "bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                    : "bg-white border-purple-200"
+                  }`}
+              />
+              {errors.playerName && (
+                <p className="text-red-500 text-sm">
+                  {errors.playerName.message}
+                </p>
+              )}
+            </div>
 
-          <Button
-            variant="outline"
-            className={`w-full h-12 text-base font-semibold ${isDark ? 'border-slate-700 hover:bg-slate-800 text-white' : 'border-purple-200 hover:bg-purple-50'
-              }`}
-            onClick={onBack}
-          >
-            Back
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  </motion.div>
+            {/* Room Code */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="code"
+                className={`text-base font-semibold ${textPrimaryClass}`}
+              >
+                Room Code
+              </Label>
+              <Input
+                id="code"
+                placeholder="XXXXXX"
+                maxLength={6}
+                {...register("roomCode", {
+                  required: "Room code is required",
+                  pattern: {
+                    value: /^[A-Z0-9]{6}$/,
+                    message: "Must be 6 letters or numbers",
+                  },
+                  onChange: handleRoomCodeChange,
+                })}
+                className={`h-12 text-lg tracking-widest uppercase text-center font-bold ${isDark
+                    ? "bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                    : "bg-white border-purple-200"
+                  }`}
+              />
+              {errors.roomCode && (
+                <p className="text-red-500 text-sm">
+                  {errors.roomCode.message}
+                </p>
+              )}
+            </div>
+
+            {/* Buttons */}
+            <div className="pt-3 space-y-2">
+              <Button
+                type="submit"
+                className="w-full h-12 text-base font-bold bg-gradient-to-r from-purple-500 to-purple-600 shadow transition-all duration-200"
+                disabled={isLoading}
+              >
+                {isLoading ? "Joining..." : "Join Room"}
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className={`w-full h-12 text-base font-semibold ${isDark
+                    ? "border-slate-700 hover:bg-slate-800 text-white"
+                    : "border-purple-200 hover:bg-purple-50"
+                  }`}
+                onClick={onBack}
+              >
+                Back
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
 });
 
 export default JoinRoomForm;

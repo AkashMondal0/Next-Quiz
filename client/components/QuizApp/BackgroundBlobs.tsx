@@ -21,7 +21,7 @@ const AnimatedBackground = memo(function AnimatedBackground({ isDark, particles 
           }}
         />
       ))}
-      {particles.map((p) => (
+      {/* {particles.map((p) => (
         <motion.div
           key={p.id}
           className={`absolute rounded-full ${isDark ? 'bg-purple-400' : 'bg-purple-300'}`}
@@ -33,7 +33,7 @@ const AnimatedBackground = memo(function AnimatedBackground({ isDark, particles 
           animate={{ y: [0, -18 * p.scale, 0] }}
           transition={{ duration: p.duration, repeat: Infinity, delay: p.delay, ease: 'easeInOut' }}
         />
-      ))}
+      ))} */}
     </>
   )
 });
