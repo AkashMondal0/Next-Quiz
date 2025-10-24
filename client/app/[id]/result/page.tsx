@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Moon, Sun, Crown, Trophy, Medal, Award, Target, Clock, 
+import {
+  Moon, Sun, Crown, Trophy, Medal, Award, Target, Clock,
   Flame, CheckCircle2, XCircle, TrendingUp, Zap, Star,
   Home, RotateCcw, Share2, Download, Sparkles, ChevronRight
 } from 'lucide-react';
@@ -16,10 +16,10 @@ export default function QuizResults() {
   const [showConfetti, setShowConfetti] = useState(true);
 
   const players = [
-    { 
-      id: 1, 
-      name: 'Alex Thunder', 
-      avatar: 'AT', 
+    {
+      id: 1,
+      name: 'Alex Thunder',
+      avatar: 'AT',
       color: 'from-purple-500 to-pink-500',
       score: 950,
       correctAnswers: 9,
@@ -31,10 +31,10 @@ export default function QuizResults() {
       accuracy: 90,
       fastestAnswer: 5.2
     },
-    { 
-      id: 2, 
-      name: 'Jordan Smith', 
-      avatar: 'JS', 
+    {
+      id: 2,
+      name: 'Jordan Smith',
+      avatar: 'JS',
       color: 'from-blue-500 to-cyan-500',
       score: 820,
       correctAnswers: 8,
@@ -46,10 +46,10 @@ export default function QuizResults() {
       accuracy: 80,
       fastestAnswer: 7.8
     },
-    { 
-      id: 3, 
-      name: 'Casey Brown', 
-      avatar: 'CB', 
+    {
+      id: 3,
+      name: 'Casey Brown',
+      avatar: 'CB',
       color: 'from-orange-500 to-red-500',
       score: 780,
       correctAnswers: 8,
@@ -61,10 +61,10 @@ export default function QuizResults() {
       accuracy: 80,
       fastestAnswer: 9.1
     },
-    { 
-      id: 4, 
-      name: 'Sam Parker', 
-      avatar: 'SP', 
+    {
+      id: 4,
+      name: 'Sam Parker',
+      avatar: 'SP',
       color: 'from-green-500 to-emerald-500',
       score: 710,
       correctAnswers: 7,
@@ -76,10 +76,10 @@ export default function QuizResults() {
       accuracy: 70,
       fastestAnswer: 8.5
     },
-    { 
-      id: 5, 
-      name: 'Taylor Swift', 
-      avatar: 'TS', 
+    {
+      id: 5,
+      name: 'Taylor Swift',
+      avatar: 'TS',
       color: 'from-pink-500 to-rose-500',
       score: 680,
       correctAnswers: 7,
@@ -91,10 +91,10 @@ export default function QuizResults() {
       accuracy: 70,
       fastestAnswer: 10.2
     },
-    { 
-      id: 6, 
-      name: 'Morgan Lee', 
-      avatar: 'ML', 
+    {
+      id: 6,
+      name: 'Morgan Lee',
+      avatar: 'ML',
       color: 'from-indigo-500 to-purple-500',
       score: 590,
       correctAnswers: 6,
@@ -108,7 +108,7 @@ export default function QuizResults() {
     },
   ];
 
-  const containerVariants = {
+  const containerVariants:any = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -116,7 +116,7 @@ export default function QuizResults() {
     }
   };
 
-  const itemVariants = {
+  const itemVariants:any = {
     hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
@@ -136,8 +136,8 @@ export default function QuizResults() {
   const textPrimaryClass = isDark ? 'text-white' : 'text-gray-900';
   const textSecondaryClass = isDark ? 'text-slate-300' : 'text-gray-600';
 
-  const getRankIcon = (rank) => {
-    switch(rank) {
+  const getRankIcon = (rank: any) => {
+    switch (rank) {
       case 1: return <Trophy className="w-8 h-8 text-yellow-400" />;
       case 2: return <Medal className="w-8 h-8 text-slate-400" />;
       case 3: return <Medal className="w-8 h-8 text-orange-400" />;
@@ -145,8 +145,8 @@ export default function QuizResults() {
     }
   };
 
-  const getRankBadge = (rank) => {
-    switch(rank) {
+  const getRankBadge = (rank: number) => {
+    switch (rank) {
       case 1: return 'bg-gradient-to-r from-yellow-500 to-orange-500';
       case 2: return 'bg-gradient-to-r from-slate-400 to-slate-500';
       case 3: return 'bg-gradient-to-r from-orange-500 to-red-500';
@@ -161,11 +161,9 @@ export default function QuizResults() {
     <div className={`min-h-screen ${bgClass} flex items-center justify-center p-4 overflow-hidden relative transition-colors duration-500`}>
       {/* Animated Background */}
       <motion.div
-        className={`absolute top-20 left-10 w-96 h-96 ${
-          isDark ? 'bg-purple-600' : 'bg-purple-300'
-        } rounded-full mix-blend-multiply filter blur-3xl ${
-          isDark ? 'opacity-20' : 'opacity-30'
-        }`}
+        className={`absolute top-20 left-10 w-96 h-96 ${isDark ? 'bg-purple-600' : 'bg-purple-300'
+          } rounded-full mix-blend-multiply filter blur-3xl ${isDark ? 'opacity-20' : 'opacity-30'
+          }`}
         animate={{
           x: [0, 100, 0],
           y: [0, 50, 0],
@@ -174,11 +172,9 @@ export default function QuizResults() {
         transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
       />
       <motion.div
-        className={`absolute top-40 right-10 w-96 h-96 ${
-          isDark ? 'bg-blue-600' : 'bg-blue-300'
-        } rounded-full mix-blend-multiply filter blur-3xl ${
-          isDark ? 'opacity-20' : 'opacity-30'
-        }`}
+        className={`absolute top-40 right-10 w-96 h-96 ${isDark ? 'bg-blue-600' : 'bg-blue-300'
+          } rounded-full mix-blend-multiply filter blur-3xl ${isDark ? 'opacity-20' : 'opacity-30'
+          }`}
         animate={{
           x: [0, -100, 0],
           y: [0, 100, 0],
@@ -187,11 +183,9 @@ export default function QuizResults() {
         transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
       />
       <motion.div
-        className={`absolute bottom-20 left-1/2 w-96 h-96 ${
-          isDark ? 'bg-pink-600' : 'bg-pink-300'
-        } rounded-full mix-blend-multiply filter blur-3xl ${
-          isDark ? 'opacity-20' : 'opacity-30'
-        }`}
+        className={`absolute bottom-20 left-1/2 w-96 h-96 ${isDark ? 'bg-pink-600' : 'bg-pink-300'
+          } rounded-full mix-blend-multiply filter blur-3xl ${isDark ? 'opacity-20' : 'opacity-30'
+          }`}
         animate={{
           x: [0, -50, 0],
           y: [0, -50, 0],
@@ -230,13 +224,11 @@ export default function QuizResults() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.5 }}
         onClick={() => setIsDark(!isDark)}
-        className={`fixed top-6 right-6 z-50 p-4 rounded-2xl ${
-          isDark
-            ? 'bg-slate-800/80 hover:bg-slate-700/80'
-            : 'bg-white/80 hover:bg-white/90'
-        } backdrop-blur-lg shadow-xl border ${
-          isDark ? 'border-slate-700' : 'border-purple-200'
-        } transition-all duration-300`}
+        className={`fixed top-6 right-6 z-50 p-4 rounded-2xl ${isDark
+          ? 'bg-slate-800/80 hover:bg-slate-700/80'
+          : 'bg-white/80 hover:bg-white/90'
+          } backdrop-blur-lg shadow-xl border ${isDark ? 'border-slate-700' : 'border-purple-200'
+          } transition-all duration-300`}
         whileHover={{ scale: 1.1, rotate: 180 }}
         whileTap={{ scale: 0.9 }}
       >
@@ -266,16 +258,16 @@ export default function QuizResults() {
               </div>
               <motion.div
                 className="absolute -inset-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-3xl opacity-20 blur-2xl"
-                animate={{ 
-                  scale: [1, 1.3, 1], 
-                  opacity: [0.2, 0.4, 0.2] 
+                animate={{
+                  scale: [1, 1.3, 1],
+                  opacity: [0.2, 0.4, 0.2]
                 }}
                 transition={{ duration: 3, repeat: Infinity }}
               />
             </motion.div>
-            
+
             <div>
-              <motion.h1 
+              <motion.h1
                 className="text-6xl md:text-8xl font-black bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent mb-4"
                 animate={{
                   backgroundPosition: ['0%', '100%', '0%']
@@ -318,7 +310,7 @@ export default function QuizResults() {
                           {topThree[1].avatar}
                         </AvatarFallback>
                       </Avatar>
-                      <motion.div 
+                      <motion.div
                         className="absolute -top-2 -right-2 w-10 h-10 md:w-12 md:h-12 bg-slate-400 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-xl border-4 border-white"
                         animate={{ scale: [1, 1.1, 1] }}
                         transition={{ duration: 2, repeat: Infinity }}
@@ -402,7 +394,7 @@ export default function QuizResults() {
                           {topThree[2].avatar}
                         </AvatarFallback>
                       </Avatar>
-                      <motion.div 
+                      <motion.div
                         className="absolute -top-2 -right-2 w-10 h-10 md:w-12 md:h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-xl border-4 border-white"
                         animate={{ scale: [1, 1.1, 1] }}
                         transition={{ duration: 2, repeat: Infinity }}
@@ -457,17 +449,16 @@ export default function QuizResults() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.8 + (index * 0.1), type: 'spring', stiffness: 100 }}
                     whileHover={{ scale: 1.02, x: 8 }}
-                    className={`p-6 rounded-2xl border-2 ${
-                      player.rank === 1
-                        ? 'border-yellow-400 bg-yellow-500/10'
-                        : player.rank === 2
+                    className={`p-6 rounded-2xl border-2 ${player.rank === 1
+                      ? 'border-yellow-400 bg-yellow-500/10'
+                      : player.rank === 2
                         ? 'border-slate-400 bg-slate-500/10'
                         : player.rank === 3
-                        ? 'border-orange-400 bg-orange-500/10'
-                        : isDark
-                        ? 'border-slate-700 bg-slate-800/60'
-                        : 'border-purple-200 bg-white'
-                    } backdrop-blur-sm relative overflow-hidden group transition-all duration-300`}
+                          ? 'border-orange-400 bg-orange-500/10'
+                          : isDark
+                            ? 'border-slate-700 bg-slate-800/60'
+                            : 'border-purple-200 bg-white'
+                      } backdrop-blur-sm relative overflow-hidden group transition-all duration-300`}
                   >
                     <motion.div
                       className={`absolute inset-0 bg-gradient-to-br ${getRankBadge(player.rank)} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
@@ -538,9 +529,8 @@ export default function QuizResults() {
                       {/* Stats Grid */}
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                         {/* Accuracy */}
-                        <div className={`p-4 rounded-xl ${
-                          isDark ? 'bg-green-500/20' : 'bg-green-50'
-                        }`}>
+                        <div className={`p-4 rounded-xl ${isDark ? 'bg-green-500/20' : 'bg-green-50'
+                          }`}>
                           <div className="flex items-center gap-2 mb-2">
                             <Target className={`w-4 h-4 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
                             <span className={`text-xs font-medium ${textSecondaryClass}`}>Accuracy</span>
@@ -549,9 +539,8 @@ export default function QuizResults() {
                         </div>
 
                         {/* Correct */}
-                        <div className={`p-4 rounded-xl ${
-                          isDark ? 'bg-blue-500/20' : 'bg-blue-50'
-                        }`}>
+                        <div className={`p-4 rounded-xl ${isDark ? 'bg-blue-500/20' : 'bg-blue-50'
+                          }`}>
                           <div className="flex items-center gap-2 mb-2">
                             <CheckCircle2 className={`w-4 h-4 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                             <span className={`text-xs font-medium ${textSecondaryClass}`}>Correct</span>
@@ -560,9 +549,8 @@ export default function QuizResults() {
                         </div>
 
                         {/* Wrong */}
-                        <div className={`p-4 rounded-xl ${
-                          isDark ? 'bg-red-500/20' : 'bg-red-50'
-                        }`}>
+                        <div className={`p-4 rounded-xl ${isDark ? 'bg-red-500/20' : 'bg-red-50'
+                          }`}>
                           <div className="flex items-center gap-2 mb-2">
                             <XCircle className={`w-4 h-4 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
                             <span className={`text-xs font-medium ${textSecondaryClass}`}>Wrong</span>
@@ -571,9 +559,8 @@ export default function QuizResults() {
                         </div>
 
                         {/* Avg Time */}
-                        <div className={`p-4 rounded-xl ${
-                          isDark ? 'bg-purple-500/20' : 'bg-purple-50'
-                        }`}>
+                        <div className={`p-4 rounded-xl ${isDark ? 'bg-purple-500/20' : 'bg-purple-50'
+                          }`}>
                           <div className="flex items-center gap-2 mb-2">
                             <Clock className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
                             <span className={`text-xs font-medium ${textSecondaryClass}`}>Avg Time</span>
@@ -582,9 +569,8 @@ export default function QuizResults() {
                         </div>
 
                         {/* Fastest */}
-                        <div className={`p-4 rounded-xl ${
-                          isDark ? 'bg-cyan-500/20' : 'bg-cyan-50'
-                        }`}>
+                        <div className={`p-4 rounded-xl ${isDark ? 'bg-cyan-500/20' : 'bg-cyan-50'
+                          }`}>
                           <div className="flex items-center gap-2 mb-2">
                             <Zap className={`w-4 h-4 ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
                             <span className={`text-xs font-medium ${textSecondaryClass}`}>Fastest</span>
@@ -593,9 +579,8 @@ export default function QuizResults() {
                         </div>
 
                         {/* Streak */}
-                        <div className={`p-4 rounded-xl ${
-                          isDark ? 'bg-orange-500/20' : 'bg-orange-50'
-                        }`}>
+                        <div className={`p-4 rounded-xl ${isDark ? 'bg-orange-500/20' : 'bg-orange-50'
+                          }`}>
                           <div className="flex items-center gap-2 mb-2">
                             <Flame className={`w-4 h-4 ${isDark ? 'text-orange-400' : 'text-orange-600'}`} />
                             <span className={`text-xs font-medium ${textSecondaryClass}`}>Streak</span>
@@ -621,32 +606,28 @@ export default function QuizResults() {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <motion.div
-                    className={`p-6 rounded-2xl ${
-                      isDark ? 'bg-purple-500/20' : 'bg-purple-50'
-                    } text-center`}
+                    className={`p-6 rounded-2xl ${isDark ? 'bg-purple-500/20' : 'bg-purple-50'
+                      } text-center`}
                     whileHover={{ scale: 1.05, y: -5 }}
                   >
                     <motion.div
                       animate={{ rotate: [0, 360] }}
                       transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
                     >
-                      <Sparkles className={`w-10 h-10 mx-auto mb-3 ${
-                        isDark ? 'text-purple-400' : 'text-purple-600'
-                      }`} />
+                      <Sparkles className={`w-10 h-10 mx-auto mb-3 ${isDark ? 'text-purple-400' : 'text-purple-600'
+                        }`} />
                     </motion.div>
                     <p className={`text-3xl font-bold mb-1 ${textPrimaryClass}`}>10</p>
                     <p className={`text-sm ${textSecondaryClass}`}>Total Questions</p>
                   </motion.div>
 
                   <motion.div
-                    className={`p-6 rounded-2xl ${
-                      isDark ? 'bg-blue-500/20' : 'bg-blue-50'
-                    } text-center`}
+                    className={`p-6 rounded-2xl ${isDark ? 'bg-blue-500/20' : 'bg-blue-50'
+                      } text-center`}
                     whileHover={{ scale: 1.05, y: -5 }}
                   >
-                    <Trophy className={`w-10 h-10 mx-auto mb-3 ${
-                      isDark ? 'text-blue-400' : 'text-blue-600'
-                    }`} />
+                    <Trophy className={`w-10 h-10 mx-auto mb-3 ${isDark ? 'text-blue-400' : 'text-blue-600'
+                      }`} />
                     <p className={`text-3xl font-bold mb-1 ${textPrimaryClass}`}>
                       {players.length}
                     </p>
@@ -654,14 +635,12 @@ export default function QuizResults() {
                   </motion.div>
 
                   <motion.div
-                    className={`p-6 rounded-2xl ${
-                      isDark ? 'bg-green-500/20' : 'bg-green-50'
-                    } text-center`}
+                    className={`p-6 rounded-2xl ${isDark ? 'bg-green-500/20' : 'bg-green-50'
+                      } text-center`}
                     whileHover={{ scale: 1.05, y: -5 }}
                   >
-                    <Star className={`w-10 h-10 mx-auto mb-3 ${
-                      isDark ? 'text-green-400' : 'text-green-600'
-                    }`} />
+                    <Star className={`w-10 h-10 mx-auto mb-3 ${isDark ? 'text-green-400' : 'text-green-600'
+                      }`} />
                     <p className={`text-3xl font-bold mb-1 ${textPrimaryClass}`}>
                       {Math.round(players.reduce((acc, p) => acc + p.accuracy, 0) / players.length)}%
                     </p>
@@ -669,14 +648,12 @@ export default function QuizResults() {
                   </motion.div>
 
                   <motion.div
-                    className={`p-6 rounded-2xl ${
-                      isDark ? 'bg-orange-500/20' : 'bg-orange-50'
-                    } text-center`}
+                    className={`p-6 rounded-2xl ${isDark ? 'bg-orange-500/20' : 'bg-orange-50'
+                      } text-center`}
                     whileHover={{ scale: 1.05, y: -5 }}
                   >
-                    <Clock className={`w-10 h-10 mx-auto mb-3 ${
-                      isDark ? 'text-orange-400' : 'text-orange-600'
-                    }`} />
+                    <Clock className={`w-10 h-10 mx-auto mb-3 ${isDark ? 'text-orange-400' : 'text-orange-600'
+                      }`} />
                     <p className={`text-3xl font-bold mb-1 ${textPrimaryClass}`}>
                       {Math.round(players.reduce((acc, p) => acc + p.avgTime, 0) / players.length)}s
                     </p>
@@ -691,22 +668,21 @@ export default function QuizResults() {
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               className="h-16 px-10 text-lg font-bold bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 shadow-xl"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              // whileHover={{ scale: 1.05 }}
+              // whileTap={{ scale: 0.95 }}
             >
               <RotateCcw className="w-6 h-6 mr-3" />
               Play Again
             </Button>
-            
+
             <Button
               variant="outline"
-              className={`h-16 px-10 text-lg font-bold ${
-                isDark
-                  ? 'border-slate-700 hover:bg-slate-800 text-white'
-                  : 'border-purple-200 hover:bg-purple-50'
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className={`h-16 px-10 text-lg font-bold ${isDark
+                ? 'border-slate-700 hover:bg-slate-800 text-white'
+                : 'border-purple-200 hover:bg-purple-50'
+                }`}
+              // whileHover={{ scale: 1.05 }}
+              // whileTap={{ scale: 0.95 }}
             >
               <Share2 className="w-6 h-6 mr-3" />
               Share Results
@@ -714,13 +690,12 @@ export default function QuizResults() {
 
             <Button
               variant="outline"
-              className={`h-16 px-10 text-lg font-bold ${
-                isDark
-                  ? 'border-slate-700 hover:bg-slate-800 text-white'
-                  : 'border-purple-200 hover:bg-purple-50'
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className={`h-16 px-10 text-lg font-bold ${isDark
+                ? 'border-slate-700 hover:bg-slate-800 text-white'
+                : 'border-purple-200 hover:bg-purple-50'
+                }`}
+              // whileHover={{ scale: 1.05 }}
+              // whileTap={{ scale: 0.95 }}
             >
               <Home className="w-6 h-6 mr-3" />
               Home
@@ -739,9 +714,8 @@ export default function QuizResults() {
               <CardContent>
                 <div className="grid md:grid-cols-3 gap-4">
                   <motion.div
-                    className={`p-6 rounded-xl ${
-                      isDark ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/50' : 'bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-300'
-                    }`}
+                    className={`p-6 rounded-xl ${isDark ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/50' : 'bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-300'
+                      }`}
                     whileHover={{ scale: 1.03 }}
                   >
                     <div className="flex items-start gap-4">
@@ -763,9 +737,8 @@ export default function QuizResults() {
                   </motion.div>
 
                   <motion.div
-                    className={`p-6 rounded-xl ${
-                      isDark ? 'bg-gradient-to-br from-orange-500/20 to-red-500/20 border-2 border-orange-500/50' : 'bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-300'
-                    }`}
+                    className={`p-6 rounded-xl ${isDark ? 'bg-gradient-to-br from-orange-500/20 to-red-500/20 border-2 border-orange-500/50' : 'bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-300'
+                      }`}
                     whileHover={{ scale: 1.03 }}
                   >
                     <div className="flex items-start gap-4">
@@ -787,9 +760,8 @@ export default function QuizResults() {
                   </motion.div>
 
                   <motion.div
-                    className={`p-6 rounded-xl ${
-                      isDark ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-2 border-green-500/50' : 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300'
-                    }`}
+                    className={`p-6 rounded-xl ${isDark ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-2 border-green-500/50' : 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300'
+                      }`}
                     whileHover={{ scale: 1.03 }}
                   >
                     <div className="flex items-start gap-4">

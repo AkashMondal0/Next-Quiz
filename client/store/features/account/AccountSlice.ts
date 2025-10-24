@@ -1,4 +1,3 @@
-import { Author } from './../../../../server/src/auth/entities/author.entity';
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { fetchSession, handleLogOut } from './Api'
@@ -11,7 +10,7 @@ const initialState: AccountState = {
 }
 
 export type AccountState = {
-    session: Author | null
+    session: any | null
     sessionLoading: "normal" | "pending" | "error" | "idle"
     sessionError: string | null
     counter: number
