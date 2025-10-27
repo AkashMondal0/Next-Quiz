@@ -33,11 +33,7 @@ const JoinRoomForm = memo(function JoinRoomForm({
   cardBgClass: string;
   onBack: () => void;
 }) {
-  const [localData, setData] = useLocalStorage<TemporaryUser>("username", {
-    id: Math.floor(1000 + Math.random() * 9000),
-    username: new Array(8).fill(null).map(() => String.fromCharCode(Math.floor(Math.random() * 26) + 97)).join(''),
-    avatar: "",
-  });
+  const [localData, setData] = useLocalStorage<TemporaryUser>("username");
   const [isLoading, setIsLoading] = useState(false);
   const {
     register,

@@ -36,16 +36,24 @@ export class EventGateway implements OnModuleInit {
     this.eventService.handleDisconnect(client);
   }
 
-  @SubscribeMessage('message-typing')
-  async handleMessageTyping(@MessageBody() data: any) {
-  }
+  // @SubscribeMessage('room-join')
+  // async handleJoinRoom(@MessageBody() data: any) {
+  //   return this.eventService.joinRoom(data);
+  // }
 
-  @SubscribeMessage('message-seen')
-  async handleMessageSeen(@MessageBody() data: any) {
-  }
+  // @SubscribeMessage('room-leave')
+  // async handleLeaveRoom(@MessageBody() data: any) {
+  //   return this.eventService.leaveRoom(data);
+  // }
 
-  @SubscribeMessage('message')
-  async handleMessage(@MessageBody() data: any) {
-  }
+  // @SubscribeMessage('room-result')
+  // async handleRoomResult(@MessageBody() data: any) {
+  //   return this.eventService.getRoomResult(data);
+  // }
+
+  // @SubscribeMessage('room-activity')
+  // async handleRoomActivity(@MessageBody() data: any) {
+  //   return this.eventService.createRoom(data);
+  // }
 
 }

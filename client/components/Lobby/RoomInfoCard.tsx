@@ -9,6 +9,7 @@ export default function RoomInfoCard({
   copied,
   handleCopyCode,
   readyCount,
+  participantLimit,
   totalPlayers,
 }: {
   isDark: boolean;
@@ -16,6 +17,7 @@ export default function RoomInfoCard({
   copied: boolean;
   handleCopyCode: () => void;
   readyCount: number;
+  participantLimit: number;
   totalPlayers: number;
 }) {
   return (
@@ -46,7 +48,7 @@ export default function RoomInfoCard({
         <div className={`p-4 rounded-xl flex items-center gap-3 ${isDark ? 'bg-blue-500/20' : 'bg-blue-50'}`}>
           <Users className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
           <div>
-            <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{totalPlayers}/8 Players</p>
+            <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{totalPlayers}/{participantLimit} Players</p>
             <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>{readyCount} ready</p>
           </div>
         </div>

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PlayerCard from './PlayerCard';
 import { Users } from 'lucide-react';
 
-export default function PlayersGrid({ isDark, players, totalPlayers }: { isDark: boolean; players: any[]; totalPlayers: number; }) {
+export default function PlayersGrid({ isDark, isHost, players, totalPlayers, participantLimit }: { isDark: boolean; isHost: boolean; players: any[]; totalPlayers: number; participantLimit: number; }) {
     const playerVariants: any = {
         hidden: { scale: 0.9, opacity: 0 },
         visible: { scale: 1, opacity: 1, transition: { type: 'spring', stiffness: 150 } },
@@ -18,8 +18,8 @@ export default function PlayersGrid({ isDark, players, totalPlayers }: { isDark:
     return (
         <motion.div className="grid sm:grid-cols-2 gap-4" variants={containerVariants}>
             <AnimatePresence mode="popLayout">
-                {players.map(p => <PlayerCard key={p.id} player={p} isDark={isDark} variants={playerVariants} textPrimaryClass={isDark ? 'text-slate-300' : 'text-gray-600'} />)}
-                {[...Array(Math.max(0, 8 - totalPlayers))].map((_, i) => (
+                {players.map(p => <PlayerCard isHost={isHost} key={p.id} player={p} isDark={isDark} variants={playerVariants} textPrimaryClass={isDark ? 'text-slate-300' : 'text-gray-600'} />)}
+                {[...Array(Math.max(0, participantLimit - totalPlayers))].map((_, i) => (
                     <motion.div
                         key={`empty-${i}`}
                         variants={playerVariants}

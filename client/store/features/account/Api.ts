@@ -1,5 +1,6 @@
 import { appInfo } from "@/config/app-details";
 import api from "@/lib/axios";
+import { RoomSession } from "@/types";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const fetchSession = createAsyncThunk(
@@ -8,6 +9,20 @@ export const fetchSession = createAsyncThunk(
         try {
             const res = await api.get(appInfo.apiUrl + "/auth/session");
             return res.data;
+        } catch (error: any) {
+            return thunkApi.rejectWithValue({
+                message: error?.response?.data?.message || "fetch error",
+            });
+        }
+    },
+);
+
+export const fetchRoomSession = createAsyncThunk(
+    "get/room/session",
+    async (id: string, thunkApi) => {
+        try {
+            const res = await api.get(appInfo.apiUrl + "/quiz/room/" + id);
+            return res.data as RoomSession;
         } catch (error: any) {
             return thunkApi.rejectWithValue({
                 message: error?.response?.data?.message || "fetch error",

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 
-export function useLocalStorage<T>(key: string, initialValue: T) {
+export function useLocalStorage<T>(key: string, initialValue?: T) {
   const isBrowser = typeof window !== 'undefined';
 
-  const [storedValue, setStoredValue] = useState<T>(() => {
+  const [storedValue, setStoredValue] = useState<T|any>(() => {
     if (!isBrowser) return initialValue;
     try {
       const item = window.localStorage.getItem(key);

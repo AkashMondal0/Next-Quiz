@@ -1,12 +1,4 @@
-export type loadingType = "idle" | "pending" | "normal";
-
-export type User = {
-    id: string;
-    username: string;
-    email?: string;
-    createdAt: string;
-    updatedAt: string;
-};
+// new 2.0 types
 
 export type TemporaryUser = {
     id: number | string;
@@ -14,85 +6,55 @@ export type TemporaryUser = {
     username: string;
 }
 
-export type MatchmakingResponse = {
-    code: string | null;
-    players: TemporaryUser[];
-    status: "waiting" | "joining" | "ready";
-    members?: number[];
-    roomSize: number;
+export type Player = TemporaryUser & {
+    isReady: boolean
+    isHost: boolean
 }
 
-export type RoomSessionActivityData = {
-    type: "quiz_submit" | "quiz_answer" | "quiz_start" | "quiz_result_update" | "quiz_leave";
-    members: (string | number)[];
-    id: string | number | undefined;
-    totalAnswered: number;
-    code?: string;
-    score: number;
-}
-export type QuestionResponse = {
-    text: string;
-    options: string[];
-    correctIndex: number;
-};
-export type QuizPrompt = {
-    topic: string;
-    numberOfQuestions?: number;
-    difficulty?: "easy" | "medium" | "hard";
-    participantLimit?: number;
-};
-export type RoomSession = {
-    id: string;
-    code: string;
-    players: TemporaryUser[];
-    readyPlayers: TemporaryUser[];
-    hostId?: string | number;
-    status: "waiting" | "joining" | "ready";
-    createdAt?: string;
-    updatedAt?: string;
-    main_data: QuestionResponse[];
-    matchRanking?: {
-        id: string;
-        score: number;
-        isSubmitted: boolean;
-    }[];
-    matchStarted: boolean;
-    prompt: QuizPrompt;
-    matchEnded: boolean;
-    matchDuration: number;
-    matchResults: {
-        totalMarks: number;
-        userMarks: number;
-        id: string;
-        userAnswers: number[];
-        timeTaken: number;
-    }[];
-}
-
-export type quizAnswerRequest = {
-    answers: number[];
-    userId: string;
-    code: string;
-    timeTaken?: number; // in seconds
-}
-
-
-export type QuizBattleFormData = {
-    topic: string
-    difficulty: "easy" | "medium" | "hard"
-    numberOfQuestions: number
-    participantLimit: number
-    roomCode: string
-    matchDuration: number // in seconds, default is 600 (10 minutes)
-}
-
-// new 2.0 types
 export type CreateQuizPayload = {
     prompt: string | null;
     difficulty: string;
     participantLimit: number;
     duration: number;
-    player: TemporaryUser;
+    player: Player;
     hostId: number | string;
     numberOfQuestions?: number;
+}
+
+export type RoomSession = {
+    id: string;
+    code: string;
+    players: Player[];
+    readyPlayers: Player[];
+    hostId?: string | number;
+    status: "waiting" | "joining" | "ready";
+    createdAt?: string;
+    updatedAt?: string;
+    main_data: any[]; // ----->
+    matchRanking?: MatchRanking[];
+    matchStarted: boolean;
+    matchEnded: boolean;
+    matchDuration: number;
+    matchResults: MatchResults[];
+}
+
+export type MatchResults = {
+    id: string;
+    username: string;
+    score: number;
+    correctAnswers: number;
+    wrongAnswers: number;
+    totalQuestions: number;
+    avgTime: number;
+    streak: number;
+    rank: number;
+    accuracy: number;
+    fastestAnswer: number;
+}
+
+export type MatchRanking = {
+    id: string;
+    username: string;
+    score: number;
+    rank: number;
 }

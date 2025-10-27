@@ -6,7 +6,7 @@ export enum Role {
 
 export type TemporaryUser = {
     username: string;
-    id: number;
+    id: string;
     avatar: string;
 }
 

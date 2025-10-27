@@ -3,10 +3,18 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Sparkles, Star } from 'lucide-react';
 
-export default function GameSettingsCard({ isDark }: { isDark: boolean }) {
+export default function GameSettingsCard({ isDark, data: {
+  questions,
+  difficulty
+} }: {
+  isDark: boolean, data: {
+    questions: number;
+    difficulty: string;
+  }
+}) {
   const settings = [
-    { icon: Sparkles, label: 'Questions', value: '10', color: 'blue' },
-    { icon: Star, label: 'Difficulty', value: 'Medium', color: 'yellow' },
+    { icon: Sparkles, label: 'Questions', value: questions, color: 'blue' },
+    { icon: Star, label: 'Difficulty', value: difficulty, color: 'yellow' },
   ];
 
   return (

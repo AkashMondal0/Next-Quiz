@@ -12,6 +12,9 @@ import { useForm, Controller } from "react-hook-form";
 import AIQuizLoading from "./AiGenerateQuizLoading";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { CreateQuizPayload, TemporaryUser } from "@/types";
+import api from "@/lib/axios";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type MatchFormData = {
   playerName: string;
@@ -35,11 +38,8 @@ const CreateMatchForm = memo(function CreateMatchForm({
   cardBgClass: string;
   onBack: () => void;
 }) {
-  const [localData, setValue] = useLocalStorage<TemporaryUser>("username", {
-    id: Math.floor(1000 + Math.random() * 9000),
-    username: new Array(8).fill(null).map(() => String.fromCharCode(Math.floor(Math.random() * 26) + 97)).join(''),
-    avatar: "",
-  });
+  const router = useRouter();
+  const [localData, setValue] = useLocalStorage<TemporaryUser>("username");
   const [isLoading, setIsLoading] = useState(false);
   const {
     register,
@@ -57,29 +57,37 @@ const CreateMatchForm = memo(function CreateMatchForm({
     },
   });
 
-  const onSubmit = (data: MatchFormData) => {
-    setIsLoading(true);
-    const { playerName, aiPrompt, difficulty, participantLimit, duration, numberOfQuestions } = data;
-    if (playerName.trim() !== localData.username) {
-      setValue({
-        ...localData,
-        username: playerName.trim(),
-      });
+  const onSubmit = async (data: MatchFormData) => {
+    try {
+      setIsLoading(true);
+      const { playerName, aiPrompt, difficulty, participantLimit, duration, numberOfQuestions } = data;
+      if (playerName.trim() !== localData.username) {
+        setValue({
+          ...localData,
+          username: playerName.trim(),
+        });
+      }
+      const payload: CreateQuizPayload = {
+        prompt: aiPrompt?.trim() || null,
+        difficulty,
+        participantLimit,
+        numberOfQuestions,
+        duration,
+        player: {
+          id: localData.id,
+          username: data.playerName.trim(),
+          avatar: localData.avatar,
+          isReady: false,
+          isHost: true,
+        },
+        hostId: localData.id,
+      };
+      const res = await api.post("/quiz/room/create", payload);
+      router.push(`/${res.data.code}`);
+    } catch (error) {
+      toast.error("Error creating match. Please try again.");
+      setIsLoading(false);
     }
-    const payload: CreateQuizPayload = {
-      prompt: aiPrompt?.trim() || null,
-      difficulty,
-      participantLimit,
-      numberOfQuestions,
-      duration,
-      player: {
-        id: localData.id,
-        username: data.playerName.trim(),
-        avatar: localData.avatar,
-      },
-      hostId: localData.id,
-    };
-    console.log("Create Match Payload:", payload);
   };
 
   if (isLoading) {
