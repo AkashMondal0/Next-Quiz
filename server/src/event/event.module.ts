@@ -5,5 +5,6 @@ import { RedisService } from 'src/lib/db/redis/redis.service';
 
 @Module({
   providers: [EventGateway, EventService, RedisService],
+  exports: [EventService, EventGateway],
 })
 export class EventModule { }

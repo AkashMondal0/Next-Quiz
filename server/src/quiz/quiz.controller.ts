@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { QuizService } from './quiz.service';
-import { CreateQuizPayload, JoinRoomDto } from './dto/create-quiz.dto';
+import { CreateQuizPayload, JoinRoomDto } from './entities/quiz.entity';
 
 @Controller('quiz')
 export class QuizController {

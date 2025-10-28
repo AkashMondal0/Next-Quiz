@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { RedisService } from 'src/lib/db/redis/redis.service';
+import { Player } from 'src/quiz/entities/quiz.entity';
 
 @Injectable()
 export class EventService {
@@ -60,4 +61,24 @@ export class EventService {
     this.server.to(socketId).emit("message", data.message);
   }
 
+  async joinUser(player: Player, members: string[]) {
+    if (!members.length) return;
+    const socketIds = await this.findSocketIdsByUsersIds(members);
+    if (!socketIds?.length) return;
+    this.server.to(socketIds).emit("user-joined", player);
+  }
+
+  async leaveUser(playerId: string, members: string[]) {
+    if (!members.length) return;
+    const socketIds = await this.findSocketIdsByUsersIds(members);
+    if (!socketIds?.length) return;
+    this.server.to(socketIds).emit("user-left", { playerId });
+  }
+
+  async kickUser(playerId: string) {
+    if (!playerId) return;
+    const socketIds = await this.findSocketIdsByUsersIds([playerId]);
+    if (!socketIds?.length) return;
+    this.server.to(socketIds).emit("user-kicked", { playerId });
+  }
 }

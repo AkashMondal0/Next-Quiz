@@ -20,8 +20,8 @@ export default function LobbyPage({ id }: { id: string }) {
     const roomSession = useAppSelector((state) => state.AccountState.roomSession);
     const [localData] = useLocalStorage<TemporaryUser>("username");
     const roomCode = id;
-    const isHost = true;
-    const participantLimit = 10;
+    const isHost = localData?.id === roomSession?.hostId;
+    const participantLimit = roomSession?.participantLimit || 8;
 
     const containerVariants: any = useMemo(() => ({
         hidden: { opacity: 0 },
@@ -80,6 +80,7 @@ export default function LobbyPage({ id }: { id: string }) {
                             }}
                         />
                         <ActionButtons
+                            roomCode={roomCode}
                             isHost={isHost}
                             isReady={isReady}
                             setIsReady={setIsReady}
@@ -101,6 +102,7 @@ export default function LobbyPage({ id }: { id: string }) {
                             </div>
                         </CardHeader>
                         <PlayersGrid
+                            roomCode={roomCode}
                             isHost={isHost}
                             players={roomSession?.players || []}
                             totalPlayers={totalPlayers}

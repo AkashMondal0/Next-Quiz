@@ -13,7 +13,11 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { TemporaryUser } from "@/types";
+import { RoomJoinPayload, TemporaryUser } from "@/types";
+import { toast } from "sonner";
+import api from "@/lib/axios";
+import { useRouter } from "next/navigation";
+import useSocket from "@/hooks/socketHook";
 
 interface JoinRoomFormValues {
   playerName: string;
@@ -33,12 +37,14 @@ const JoinRoomForm = memo(function JoinRoomForm({
   cardBgClass: string;
   onBack: () => void;
 }) {
+  const socket = useSocket();
+  const router = useRouter();
   const [localData, setData] = useLocalStorage<TemporaryUser>("username");
   const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     setValue,
   } = useForm<JoinRoomFormValues>({
     defaultValues: { playerName: localData.username, roomCode: "" },
@@ -48,15 +54,34 @@ const JoinRoomForm = memo(function JoinRoomForm({
     setValue("roomCode", e.target.value.toUpperCase());
   };
 
-  const onSubmit = (data: JoinRoomFormValues) => {
+  const onSubmit = async(data: JoinRoomFormValues) => {
     setIsLoading(true);
+    socket.connectSocket();
     if (data.playerName.trim() !== localData.username) {
       setData({
         ...localData,
         username: data.playerName.trim(),
       });
     }
-    console.log("🟣 Form Submitted:", data);
+    // console.log("🟣 Form Submitted:", data);
+    try {
+      const { playerName, roomCode } = data;
+      const payload: RoomJoinPayload = {
+        player: {
+          id: localData.id,
+          username: playerName.trim(),
+          avatar: localData.avatar,
+          isReady: false,
+          isHost: false,
+        },
+        roomCode: roomCode,
+      };
+      const res = await api.post("/quiz/room/join", payload);
+      router.push(`/${res.data.code}`);
+    } catch (error) {
+      toast.error("Error joining room. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (

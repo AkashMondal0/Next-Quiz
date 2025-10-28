@@ -1,8 +1,9 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer } from '@nestjs/websockets';
+import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import configuration from 'src/lib/configs/configuration';
 import { EventService } from './event.service';
 import { OnModuleInit } from '@nestjs/common';
+import { Player } from 'src/quiz/entities/quiz.entity';
 
 const url = configuration().REDIS_URL;
 if (!url) throw new Error("REDIS_URL is not defined in .env file");
@@ -36,24 +37,17 @@ export class EventGateway implements OnModuleInit {
     this.eventService.handleDisconnect(client);
   }
 
-  // @SubscribeMessage('room-join')
-  // async handleJoinRoom(@MessageBody() data: any) {
-  //   return this.eventService.joinRoom(data);
-  // }
+  async joinUser(player: Player, members: string[]) {
+    return this.eventService.joinUser(player, members);
+  }
 
-  // @SubscribeMessage('room-leave')
-  // async handleLeaveRoom(@MessageBody() data: any) {
-  //   return this.eventService.leaveRoom(data);
-  // }
+  async leaveUser(playerId: string, members: string[]) {
+    return this.eventService.leaveUser(playerId, members);
+  }
 
-  // @SubscribeMessage('room-result')
-  // async handleRoomResult(@MessageBody() data: any) {
-  //   return this.eventService.getRoomResult(data);
-  // }
-
-  // @SubscribeMessage('room-activity')
-  // async handleRoomActivity(@MessageBody() data: any) {
-  //   return this.eventService.createRoom(data);
-  // }
+  async kickUser(playerId: string, members: string[]) {
+    this.eventService.leaveUser(playerId, members);
+    this.eventService.kickUser(playerId);
+  }
 
 }

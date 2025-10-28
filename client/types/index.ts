@@ -1,7 +1,7 @@
 // new 2.0 types
 
 export type TemporaryUser = {
-    id: number | string;
+    id: string;
     avatar: string;
     username: string;
 }
@@ -26,16 +26,20 @@ export type RoomSession = {
     code: string;
     players: Player[];
     readyPlayers: Player[];
-    hostId?: string | number;
+    hostId: string | number;
     status: "waiting" | "joining" | "ready";
-    createdAt?: string;
-    updatedAt?: string;
-    main_data: any[]; // ----->
-    matchRanking?: MatchRanking[];
+    participantLimit: number;
+    difficulty: string;
+    duration: number; // in seconds
+    questions: any[];
+    createdAt: string;
+    matchRanking: MatchRanking[];
     matchStarted: boolean;
     matchEnded: boolean;
     matchDuration: number;
     matchResults: MatchResults[];
+    prompt: string | null;
+    numberOfQuestions?: number;
 }
 
 export type MatchResults = {
@@ -57,4 +61,9 @@ export type MatchRanking = {
     username: string;
     score: number;
     rank: number;
+}
+
+export type RoomJoinPayload = {
+    roomCode: string;
+    player: Player;
 }

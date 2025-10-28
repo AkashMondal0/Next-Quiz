@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { fetchRoomSession, fetchSession, handleLogOut } from './Api'
-import { RoomSession } from '@/types'
+import { Player, RoomSession } from '@/types'
 
 const initialState: AccountState = {
     session: null,
@@ -25,7 +25,19 @@ export const AccountSlice = createSlice({
     name: 'Account',
     initialState,
     reducers: {
-
+        joinUserInRoom(state, action: PayloadAction<Player>) {
+            if (state.roomSession) {
+                state.roomSession.players.push(action.payload)
+            }
+        },
+        leaveUserFromRoom(state, action: PayloadAction<string>) {
+            if (state.roomSession) {
+                state.roomSession.players = state.roomSession.players.filter(player => player.id !== action.payload);
+            }
+        },
+        roomReset(state) {
+            state.roomSession = null;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -74,7 +86,9 @@ export const AccountSlice = createSlice({
 })
 
 export const {
-
+    joinUserInRoom,
+    leaveUserFromRoom,
+    roomReset
 } = AccountSlice.actions
 
 export default AccountSlice.reducer

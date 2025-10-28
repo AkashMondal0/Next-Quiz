@@ -1,19 +1,19 @@
 'use client'
 
 import { appInfo } from "@/config/app-details";
-import { RootState } from "@/store";
 import {
     createContext,
     useCallback,
-    useEffect,
     useRef,
     useState,
 } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { toast } from 'sonner'
 import { io, Socket } from "socket.io-client";
-import { RoomSession, RoomSessionActivityData, TemporaryUser } from "@/types";
+import { Player, TemporaryUser } from "@/types";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { joinUserInRoom, leaveUserFromRoom, roomReset } from "@/store/features/account/AccountSlice";
+import { useRouter } from "next/navigation";
 
 interface SocketStateType {
     socket: Socket | null
@@ -42,48 +42,41 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
     const socketRef = useRef<Socket | null>(null)
     const dispatch = useDispatch()
     const [isConnected, setIsConnected] = useState(false)
+    const router = useRouter();
 
     const setupListeners = useCallback(() => {
         const socket = socketRef.current;
         if (!socket) return;
 
         socket.on('connect', () => {
-            setIsConnected(true)
-            // toast.success("Socket connected");
+            setIsConnected(true);
         });
 
         socket.on('disconnect', () => {
-            setIsConnected(false)
-            // toast.error("Socket disconnected");
+            setIsConnected(false);
         });
 
-        socket.on('room-activity', (data: RoomSessionActivityData) => {
-            // console.log("Room activity event received:", data);
-            // switch (data.type) {
-            //     case "quiz_answer":
-            //         dispatch(setRoomSessionScore(data));
-            //         break;
-            //     case "quiz_start":
-            //         dispatch(setRoomSessionStart(data));
-            //         break;
-            // }
+        socket.on('user-joined', (data: Player) => {
+            dispatch(joinUserInRoom(data));
         });
 
-        // socket.on(event_name.event.roomData, (data: RoomSession) => {
-        //     // console.log("Room data event received:", data);
-        //     dispatch(setRoomSession(data));
-        // });
+        socket.on('user-left', (data: { playerId: string }) => {
+            dispatch(leaveUserFromRoom(data.playerId));
+        });
+
+        socket.on('user-kicked', (err) => {
+            dispatch(roomReset());
+            router.replace('/');
+        });
     }, [dispatch]);
 
 
     const removeListeners = useCallback(() => {
         const socket = socketRef.current;
         if (!socket) return;
-
         socket.off('connect');
         socket.off('disconnect');
-        socket.off('room-activity');
-        // socket.off(event_name.event.roomData);
+        socket.off('user-joined');
     }, []);
 
     const connectSocket = useCallback(() => {
