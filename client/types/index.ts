@@ -57,13 +57,37 @@ export type MatchResults = {
 }
 
 export type MatchRanking = {
-    id: string;
+    id: number;
     username: string;
     score: number;
-    rank: number;
+    answered: number;
 }
 
 export type RoomJoinPayload = {
     roomCode: string;
     player: Player;
 }
+
+export interface Question {
+    id: number;
+    question: string;
+    options: string[];
+    correctAnswer: number;
+    points: number;
+}
+
+export type RankUser = {
+  username: string;
+  color: string;
+  score: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+  totalQuestions: number;
+  timeTaken: number;
+  rank: number;
+  accuracy: number;
+  avgTime: number;
+  fastestAnswer: number;
+  streak: number;
+  id: number;
+};

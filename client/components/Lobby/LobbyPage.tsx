@@ -11,7 +11,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { TemporaryUser } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fetchRoomSession } from '@/store/features/account/Api';
-import QuizListPage from '../QuizRoom/QuizRoom';
+import QuizListPage from '../QuizRoom/QuizListPage';
 
 export default function LobbyPage({ id }: { id: string }) {
     const [isDark, setIsDark] = useState(true);
@@ -57,7 +57,7 @@ export default function LobbyPage({ id }: { id: string }) {
     const textPrimaryClass = isDark ? 'text-white' : 'text-gray-900';
     const textSecondaryClass = isDark ? 'text-slate-300' : 'text-gray-600';
 
-    if(roomSession?.matchStarted) {
+    if(!roomSession?.matchStarted) {
         return <QuizListPage/>
     }
 
