@@ -11,6 +11,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { TemporaryUser } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fetchRoomSession } from '@/store/features/account/Api';
+import QuizListPage from '../QuizRoom/QuizRoom';
 
 export default function LobbyPage({ id }: { id: string }) {
     const [isDark, setIsDark] = useState(true);
@@ -22,6 +23,7 @@ export default function LobbyPage({ id }: { id: string }) {
     const roomCode = id;
     const isHost = localData?.id === roomSession?.hostId;
     const participantLimit = roomSession?.participantLimit || 8;
+    const isReadyToStart = !roomSession?.players.every(p => p.isReady);
 
     const containerVariants: any = useMemo(() => ({
         hidden: { opacity: 0 },
@@ -54,6 +56,11 @@ export default function LobbyPage({ id }: { id: string }) {
     const bgClass = isDark ? 'bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950' : 'bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50';
     const textPrimaryClass = isDark ? 'text-white' : 'text-gray-900';
     const textSecondaryClass = isDark ? 'text-slate-300' : 'text-gray-600';
+
+    if(roomSession?.matchStarted) {
+        return <QuizListPage/>
+    }
+
     return (
         <div className={`min-h-screen ${bgClass} flex items-center justify-center p-4 overflow-hidden relative transition-colors duration-500`}>
             <div className={`absolute top-20 left-10 w-96 h-96 ${isDark ? 'bg-purple-600 opacity-20' : 'bg-purple-300 opacity-30'} rounded-full mix-blend-multiply blur-3xl animate-[floatBlob1_20s_linear_infinite]`} />
@@ -80,6 +87,8 @@ export default function LobbyPage({ id }: { id: string }) {
                             }}
                         />
                         <ActionButtons
+                            isReadyToStart={isReadyToStart}
+                            participantsCount={totalPlayers}
                             roomCode={roomCode}
                             isHost={isHost}
                             isReady={isReady}

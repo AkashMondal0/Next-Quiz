@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { RedisService } from 'src/lib/db/redis/redis.service';
-import { Player } from 'src/quiz/entities/quiz.entity';
+import { Player, RoomSession } from 'src/quiz/entities/quiz.entity';
 
 @Injectable()
 export class EventService {
@@ -80,5 +80,31 @@ export class EventService {
     const socketIds = await this.findSocketIdsByUsersIds([playerId]);
     if (!socketIds?.length) return;
     this.server.to(socketIds).emit("user-kicked", { playerId });
+  }
+
+  async toggleReady(playerId: string, isReady: boolean, roomCode: string) {
+    if (!roomCode) return;
+    const roomData = await this.redisService.client.get(`room:${roomCode}`);
+    if (!roomData) return;
+    const room = JSON.parse(roomData) as RoomSession;
+    const members = room.members.filter((id: string) => id !== playerId);
+    if (!members.length) return;
+    const socketIds = await this.findSocketIdsByUsersIds(members);
+    if (!socketIds?.length) return;
+    this.server.to(socketIds).emit("player-ready-toggle", { playerId, isReady, roomCode });
+  }
+
+  async startGame(roomCode: string) {
+    if (!roomCode) return;
+    const roomData = await this.redisService.client.get(`room:${roomCode}`);
+    if (!roomData) return;
+    const room = JSON.parse(roomData) as RoomSession;
+    const members = room.members;
+    room.matchStarted = true;
+    await this.redisService.client.set(`room:${roomCode}`, JSON.stringify(room));
+    if (!members.length) return;
+    const socketIds = await this.findSocketIdsByUsersIds(members);
+    if (!socketIds?.length) return;
+    this.server.to(socketIds).emit("start-game", { roomCode });
   }
 }

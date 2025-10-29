@@ -80,7 +80,7 @@ const CreateMatchForm = memo(function CreateMatchForm({
           id: localData.id,
           username: data.playerName.trim(),
           avatar: localData.avatar,
-          isReady: false,
+          isReady: true,
           isHost: true,
         },
         hostId: localData.id,

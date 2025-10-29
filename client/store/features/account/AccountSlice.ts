@@ -37,6 +37,19 @@ export const AccountSlice = createSlice({
         },
         roomReset(state) {
             state.roomSession = null;
+        },
+        playerReadyToggle(state, action: PayloadAction<{ playerId: string; isReady: boolean; roomCode: string }>) {
+            if (state.roomSession?.id === action.payload.roomCode) {
+                const player = state.roomSession.players.find(p => p.id === action.payload.playerId);
+                if (player) {
+                    player.isReady = action.payload.isReady;
+                }
+            }
+        },
+        gameStart(state) {
+            if (state.roomSession) {
+                state.roomSession.matchStarted = true;
+            }
         }
     },
     extraReducers: (builder) => {
@@ -88,7 +101,9 @@ export const AccountSlice = createSlice({
 export const {
     joinUserInRoom,
     leaveUserFromRoom,
-    roomReset
+    roomReset,
+    playerReadyToggle,
+    gameStart   
 } = AccountSlice.actions
 
 export default AccountSlice.reducer

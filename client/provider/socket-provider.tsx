@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 import { io, Socket } from "socket.io-client";
 import { Player, TemporaryUser } from "@/types";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { joinUserInRoom, leaveUserFromRoom, roomReset } from "@/store/features/account/AccountSlice";
+import { gameStart, joinUserInRoom, leaveUserFromRoom, playerReadyToggle, roomReset } from "@/store/features/account/AccountSlice";
 import { useRouter } from "next/navigation";
 
 interface SocketStateType {
@@ -68,6 +68,19 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
             dispatch(roomReset());
             router.replace('/');
         });
+
+        socket.on('player-ready-toggle', (data: { playerId: string; roomCode: string; isReady: boolean }) => {
+            // Handle player ready toggle event
+            dispatch(playerReadyToggle({
+                playerId: data.playerId,
+                roomCode: data.roomCode,
+                isReady: data.isReady
+            }));
+        });
+
+        socket.on('start-game', () => {
+            dispatch(gameStart());
+        })
     }, [dispatch]);
 
 
@@ -77,6 +90,10 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
         socket.off('connect');
         socket.off('disconnect');
         socket.off('user-joined');
+        socket.off('user-left');
+        socket.off('user-kicked');
+        socket.off('player-ready-toggle');
+        socket.off('start-game');
     }, []);
 
     const connectSocket = useCallback(() => {

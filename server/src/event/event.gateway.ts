@@ -50,4 +50,14 @@ export class EventGateway implements OnModuleInit {
     this.eventService.kickUser(playerId);
   }
 
+  @SubscribeMessage('player-ready-toggle')
+  async toggleReady(@MessageBody() data: { playerId: string, isReady: boolean, roomCode: string}) {
+    return this.eventService.toggleReady(data.playerId, data.isReady, data.roomCode);
+  }
+
+  @SubscribeMessage('start-game')
+  async startGame(@MessageBody() data: { roomCode: string }) {
+    return this.eventService.startGame(data.roomCode);
+  }
+
 }
