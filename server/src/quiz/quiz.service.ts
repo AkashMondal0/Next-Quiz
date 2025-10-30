@@ -56,6 +56,7 @@ export class QuizService {
             score: 0,
             username: createQuizDto.player.username,
             rank: 0,
+            answered: 0,
           }
         ],
       };
@@ -116,6 +117,7 @@ export class QuizService {
         score: 0,
         username: joinRoomDto.player.username,
         rank: 0,
+        answered: 0,
       });
 
       room.members.push(joinRoomDto.player.id);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Crown } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
@@ -13,16 +13,17 @@ interface PlayerCardProps {
     isDark: boolean;
     textPrimaryClass: string;
     textSecondaryClass: string;
-    isYou?: boolean;
+    isYou: boolean;
     score?: number;
-    answered?: number;
-    color?: string;
+    answered: number;
 }
 
 // ============= PLAYER CARD =============
 const PlayerCard: React.FC<PlayerCardProps> = React.memo(({ player, index, isDark, textPrimaryClass, textSecondaryClass, isYou,
-    score = 0, answered = 0, color = randomColor()
- }) => (
+    score = 0, answered = 0
+ }) => {
+    const color = useMemo(() => randomColor(), []);
+    return (
     <motion.div
         layout
         initial={{ opacity: 0, scale: 0.9 }}
@@ -60,8 +61,8 @@ const PlayerCard: React.FC<PlayerCardProps> = React.memo(({ player, index, isDar
                     {index === 0 && <Crown className="w-3 h-3 text-yellow-500 flex-shrink-0" />}
                 </div>
                 <div className="flex items-center gap-1 text-xs">
-                    <span className={textSecondaryClass}>{score} pts</span>
-                    <span className={textSecondaryClass}>•</span>
+                    {/* <span className={textSecondaryClass}>{score} pts</span>
+                    <span className={textSecondaryClass}>•</span> */}
                     <span className={textSecondaryClass}>{answered}/10</span>
                 </div>
             </div>
@@ -73,7 +74,7 @@ const PlayerCard: React.FC<PlayerCardProps> = React.memo(({ player, index, isDar
             )}
         </div>
     </motion.div>
-));
+)});
 
 
 export default PlayerCard;

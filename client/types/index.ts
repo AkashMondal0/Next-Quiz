@@ -57,7 +57,7 @@ export type MatchResults = {
 }
 
 export type MatchRanking = {
-    id: number;
+    id: string;
     username: string;
     score: number;
     answered: number;

@@ -62,6 +62,7 @@ export type MatchRanking = {
     username: string;
     score: number;
     rank: number;
+    answered: number;
 }
 
 export type JoinRoomDto = {

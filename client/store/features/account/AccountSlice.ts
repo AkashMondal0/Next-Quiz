@@ -50,7 +50,15 @@ export const AccountSlice = createSlice({
             if (state.roomSession) {
                 state.roomSession.matchStarted = true;
             }
-        }
+        },
+        rankingActivity(state, action: PayloadAction<{ playerId: string; roomCode: string; answeredCount: number }>) {
+            if (state.roomSession?.id === action.payload.roomCode) {
+                const player = state.roomSession.matchRanking.find(p => p.id === action.payload.playerId);
+                if (player) {
+                    player.answered = action.payload.answeredCount;
+                }
+            }
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -103,7 +111,8 @@ export const {
     leaveUserFromRoom,
     roomReset,
     playerReadyToggle,
-    gameStart   
+    gameStart,
+    rankingActivity
 } = AccountSlice.actions
 
 export default AccountSlice.reducer

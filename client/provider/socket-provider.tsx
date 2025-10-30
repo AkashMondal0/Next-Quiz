@@ -4,6 +4,7 @@ import { appInfo } from "@/config/app-details";
 import {
     createContext,
     useCallback,
+    useEffect,
     useRef,
     useState,
 } from "react";
@@ -12,7 +13,7 @@ import { toast } from 'sonner'
 import { io, Socket } from "socket.io-client";
 import { Player, TemporaryUser } from "@/types";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { gameStart, joinUserInRoom, leaveUserFromRoom, playerReadyToggle, roomReset } from "@/store/features/account/AccountSlice";
+import { gameStart, joinUserInRoom, leaveUserFromRoom, playerReadyToggle, rankingActivity, roomReset } from "@/store/features/account/AccountSlice";
 import { useRouter } from "next/navigation";
 
 interface SocketStateType {
@@ -81,6 +82,15 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
         socket.on('start-game', () => {
             dispatch(gameStart());
         })
+
+        socket.on('ranking-activity', (data: { playerId: string, roomCode: string, answeredCount: number }) => {
+            // Handle ranking activity event
+            dispatch(rankingActivity({
+                playerId: data.playerId,
+                roomCode: data.roomCode,
+                answeredCount: data.answeredCount
+            }));
+        });
     }, [dispatch]);
 
 
@@ -94,6 +104,7 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
         socket.off('user-kicked');
         socket.off('player-ready-toggle');
         socket.off('start-game');
+        socket.off('ranking-activity');
     }, []);
 
     const connectSocket = useCallback(() => {
@@ -138,15 +149,15 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     // Auto-connect on session load
-    // useEffect(() => {
-    //     if (localData.id) {
-    //         connectSocket();
-    //     }
+    useEffect(() => {
+        if (localData.id) {
+            connectSocket();
+        }
 
-    //     return () => {
-    //         disconnectSocket();
-    //     };
-    // }, [localData.id, connectSocket, disconnectSocket]);
+        return () => {
+            disconnectSocket();
+        };
+    }, [localData.id, connectSocket, disconnectSocket]);
 
     return (
         <SocketContext.Provider value={{

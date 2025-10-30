@@ -22,7 +22,7 @@ export default function LobbyPage({ id }: { id: string }) {
     const [localData] = useLocalStorage<TemporaryUser>("username");
     const roomCode = id;
     const isHost = localData?.id === roomSession?.hostId;
-    const participantLimit = roomSession?.participantLimit || 8;
+    const participantLimit = roomSession?.participantLimit || 2;
     const isReadyToStart = !roomSession?.players.every(p => p.isReady);
 
     const containerVariants: any = useMemo(() => ({
@@ -57,7 +57,7 @@ export default function LobbyPage({ id }: { id: string }) {
     const textPrimaryClass = isDark ? 'text-white' : 'text-gray-900';
     const textSecondaryClass = isDark ? 'text-slate-300' : 'text-gray-600';
 
-    if(!roomSession?.matchStarted) {
+    if(roomSession?.matchStarted) {
         return <QuizListPage/>
     }
 

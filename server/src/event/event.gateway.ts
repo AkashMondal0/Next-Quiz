@@ -60,4 +60,9 @@ export class EventGateway implements OnModuleInit {
     return this.eventService.startGame(data.roomCode);
   }
 
+  @SubscribeMessage('ranking-activity')
+  async handleRankingActivity(@MessageBody() data: { playerId: string, roomCode: string, answeredCount: number, members: string[] }) {
+    return this.eventService.handleRankingActivity(data.playerId, data.roomCode, data.answeredCount, data.members);
+  }
+
 }

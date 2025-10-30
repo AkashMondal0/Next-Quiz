@@ -107,4 +107,11 @@ export class EventService {
     if (!socketIds?.length) return;
     this.server.to(socketIds).emit("start-game", { roomCode });
   }
+
+  async handleRankingActivity(playerId: string, roomCode: string, answeredCount: number, members: string[]) {
+    if (!members.length) return;
+    const socketIds = await this.findSocketIdsByUsersIds(members);
+    if (!socketIds?.length) return;
+    this.server.to(socketIds).emit("ranking-activity", { playerId, roomCode, answeredCount });
+  }
 }
