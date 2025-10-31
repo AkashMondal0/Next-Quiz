@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { QuizService } from './quiz.service';
-import { CreateQuizPayload, JoinRoomDto } from './entities/quiz.entity';
+import { CreateQuizPayload, JoinRoomDto, SubmitQuizDto } from './entities/quiz.entity';
 
 @Controller('quiz')
 export class QuizController {
@@ -34,5 +34,10 @@ export class QuizController {
   @Post('room/result')
   getRoomResult(@Body() joinRoomDto: JoinRoomDto) {
     return this.quizService.getRoomResult(joinRoomDto);
+  }
+
+  @Post('submit/:id')
+  submitQuiz(@Param('id') id: string, @Body() submitDto: SubmitQuizDto) {
+    return this.quizService.submitQuiz(id, submitDto);
   }
 }

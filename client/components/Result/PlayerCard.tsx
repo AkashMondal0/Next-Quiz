@@ -37,13 +37,11 @@ const PlayerCard = React.memo(function PlayerCard({ player, isDark }: { player: 
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
           <div className="flex items-center gap-4 flex-1">
             <div className="flex-shrink-0">{getRankIcon(player.rank)}</div>
-
             <Avatar className="w-16 h-16 border-2 border-white/20 flex-shrink-0">
               <AvatarFallback className={`bg-gradient-to-br ${player.color} text-white text-xl font-bold`}>
                 {player.username.charAt(0).toUpperCase()}{player.username.charAt(1).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className={`font-bold text-xl md:text-2xl truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{player.username}</p>
@@ -56,6 +54,7 @@ const PlayerCard = React.memo(function PlayerCard({ player, isDark }: { player: 
                 <Trophy className={`w-5 h-5 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} />
                 <span className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{player.score}</span>
                 <span className={`text-lg ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>points</span>
+                {player.isSubmitted ? "| Submitted" : "| Not Submitted"}
               </div>
             </div>
           </div>
@@ -92,8 +91,18 @@ const PlayerCard = React.memo(function PlayerCard({ player, isDark }: { player: 
           </div>
 
           <div className={`p-4 rounded-xl ${isDark ? 'bg-orange-500/20' : 'bg-orange-50'}`}>
-            <div className="flex items-center gap-2 mb-2"><Flame className={`w-4 h-4 ${isDark ? 'text-orange-400' : 'text-orange-600'}`} /><span className={`text-xs font-medium ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>Streak</span></div>
-            <p className={`font-bold text-xl ${isDark ? 'text-white' : 'text-gray-900'}`}>{player.streak}</p>
+            <div className="flex items-center gap-2 mb-2">
+              <Flame className={`w-4 h-4 ${isDark ? 'text-orange-400' : 'text-orange-600'}`} />
+              <span className={`text-xs font-medium ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>Time Taken</span>
+            </div>
+            <p className={`font-bold text-xl ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              {(() => {
+                const t = Number(player.timeTaken ?? player.avgTime ?? 0);
+                const m = Math.floor(t / 60);
+                const s = t % 60;
+                return `${m}:${String(s).padStart(2, '0')}s`;
+              })()}
+            </p>
           </div>
         </div>
       </div>

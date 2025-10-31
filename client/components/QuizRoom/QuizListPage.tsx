@@ -16,6 +16,9 @@ import { fetchRoomSession } from '@/store/features/account/Api';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import useSocket from '@/hooks/socketHook';
 import { rankingActivity } from '@/store/features/account/AccountSlice';
+import { useRouter } from 'next/navigation';
+import api from '@/lib/axios';
+import { toast } from 'sonner';
 
 
 // ============= MAIN COMPONENT =============
@@ -29,18 +32,10 @@ export default function QuizListPage() {
   const [localData] = useLocalStorage<TemporaryUser>("username");
   const checkedInput = useRef<number[]>([]);
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const socket = useSocket();
   const [timeLeft, setTimeLeft] = useState((roomSession?.duration ? roomSession?.duration * 60 : 300)); // default to 5 minutes
-  const questions: Question[] = useMemo(() => [
-    { id: 1, question: "What is the capital of France?", options: ["London", "Berlin", "Paris", "Madrid"], correctAnswer: 2, points: 10 },
-    { id: 2, question: "Who painted the Mona Lisa?", options: ["Vincent van Gogh", "Leonardo da Vinci", "Pablo Picasso", "Claude Monet"], correctAnswer: 1, category: "Art", difficulty: "Medium", points: 15 },
-    { id: 3, question: "What is the largest planet in our solar system?", options: ["Mars", "Saturn", "Jupiter", "Neptune"], correctAnswer: 2, category: "Science", difficulty: "Easy", points: 10 },
-    { id: 4, question: "In which year did World War II end?", options: ["1943", "1944", "1945", "1946"], correctAnswer: 2, category: "History", difficulty: "Medium", points: 15 },
-    { id: 5, question: "What is the chemical symbol for Gold?", options: ["Go", "Gd", "Au", "Ag"], correctAnswer: 2, category: "Science", difficulty: "Hard", points: 20 },
-    { id: 6, question: "Which planet is known as the Red Planet?", options: ["Venus", "Mars", "Jupiter", "Saturn"], correctAnswer: 1, category: "Science", difficulty: "Easy", points: 10 },
-    { id: 7, question: "Who wrote 'Romeo and Juliet'?", options: ["Charles Dickens", "William Shakespeare", "Mark Twain", "Jane Austen"], correctAnswer: 1, category: "Literature", difficulty: "Medium", points: 15 },
-    { id: 8, question: "What is the smallest prime number?", options: ["0", "1", "2", "3"], correctAnswer: 2, category: "Mathematics", difficulty: "Hard", points: 20 },
-  ], []);
+  const questions = roomSession?.questions || [];
 
   const players = roomSession?.matchRanking
 
@@ -54,14 +49,14 @@ export default function QuizListPage() {
     }
   }, [timeLeft, submitted]);
 
-  useEffect(() => {
-    const answeredCount = Object.keys(answers).length;
-    // setPlayers(prev => {
-    //   const updated = [...prev];
-    //   updated[0] = { ...updated[0], answered: answeredCount };
-    //   return updated.sort((a, b) => b.score - a.score);
-    // });
-  }, [answers]);
+  // useEffect(() => {
+  //   const answeredCount = Object.keys(answers).length;
+  // setPlayers(prev => {
+  //   const updated = [...prev];
+  //   updated[0] = { ...updated[0], answered: answeredCount };
+  //   return updated.sort((a, b) => b.score - a.score);
+  // });
+  // }, [answers]);
 
   useLayoutEffect(() => {
     if (!roomSession?.id) return;
@@ -86,36 +81,40 @@ export default function QuizListPage() {
     // send socket event here if needed
   }, [localData?.id, roomSession?.id, socket]);
 
-  const handleSubmit = useCallback(() => {
-    if (submitted) return;
+  const handleSubmit = useCallback(async () => {
+   try {
+     if (submitted) return;
     let totalScore = 0;
     questions.forEach(q => {
       if (answers[q.id] === q.correctAnswer) {
         totalScore += q.points;
       }
     });
-
-    // setPlayers(prev => {
-    //   const updated = [...prev];
-    //   updated[0] = { ...updated[0], score: totalScore, answered: Object.keys(answers).length };
-    //   return updated.sort((a, b) => b.score - a.score);
-    // });
     setScore(totalScore);
     setSubmitted(true);
     const data = {
+      id: localData?.id,
+      username: localData?.username,
       userAnswers: answers,
       score: totalScore,
       timeTaken: 300 - timeLeft,
-      CorrectAnswers: questions.reduce((acc, q) => {
+      totalQuestions: questions.length,
+      correctAnswers: questions.reduce((acc, q) => {
         if (answers[q.id] === q.correctAnswer) {
           acc += 1;
         }
         return acc;
       }, 0),
-      WrongAnswers: Object.keys(answers).length - Object.values(answers).filter((ans, idx) => ans === questions[idx].correctAnswer).length,
+      wrongAnswers: Object.keys(answers).length - Object.values(answers).filter((ans, idx) => ans === questions[idx].correctAnswer).length,
     };
-    console.log('Data to submit:', data);
-  }, [answers, questions, submitted, timeLeft]);
+    // console.log('Data to submit:', data);
+    await api.post(`/quiz/submit/${roomSession?.id}`, data)
+    toast.success('Quiz submitted successfully!');
+   } catch (error) {
+    toast.error('Failed to submit quiz. Please try again.');
+    console.error('Submit Error:', error);
+   }
+  }, [answers, questions, submitted, timeLeft, localData?.id, localData?.username, roomSession?.id]);
 
   const handleTryAgain = useCallback(() => {
     window.location.reload();
@@ -317,7 +316,9 @@ export default function QuizListPage() {
             textPrimaryClass={textPrimaryClass}
             textSecondaryClass={textSecondaryClass}
             cardBgClass={cardBgClass}
-            onClose={() => setSubmitted(false)}
+            onClose={() => {
+              router.replace(`/${roomSession?.id}/result`);
+            }}
             onTryAgain={handleTryAgain}
           />
         )}

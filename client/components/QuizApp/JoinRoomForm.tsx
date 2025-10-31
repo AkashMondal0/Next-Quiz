@@ -17,7 +17,7 @@ import { RoomJoinPayload, TemporaryUser } from "@/types";
 import { toast } from "sonner";
 import api from "@/lib/axios";
 import { useRouter } from "next/navigation";
-import useSocket from "@/hooks/socketHook";
+// import useSocket from "@/hooks/socketHook";
 
 interface JoinRoomFormValues {
   playerName: string;
@@ -37,7 +37,7 @@ const JoinRoomForm = memo(function JoinRoomForm({
   cardBgClass: string;
   onBack: () => void;
 }) {
-  const socket = useSocket();
+  // const socket = useSocket();
   const router = useRouter();
   const [localData, setData] = useLocalStorage<TemporaryUser>("username");
   const [isLoading, setIsLoading] = useState(false);
@@ -56,7 +56,7 @@ const JoinRoomForm = memo(function JoinRoomForm({
 
   const onSubmit = async(data: JoinRoomFormValues) => {
     setIsLoading(true);
-    socket.connectSocket();
+    // socket.connectSocket();
     if (data.playerName.trim() !== localData.username) {
       setData({
         ...localData,

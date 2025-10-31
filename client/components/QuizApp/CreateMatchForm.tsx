@@ -15,7 +15,7 @@ import { CreateQuizPayload, TemporaryUser } from "@/types";
 import api from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import useSocket from "@/hooks/socketHook";
+// import useSocket from "@/hooks/socketHook";
 
 type MatchFormData = {
   playerName: string;
@@ -40,7 +40,7 @@ const CreateMatchForm = memo(function CreateMatchForm({
   onBack: () => void;
 }) {
   const router = useRouter();
-  const socket = useSocket();
+  // const socket = useSocket();
   const [localData, setValue] = useLocalStorage<TemporaryUser>("username");
   const [isLoading, setIsLoading] = useState(false);
   const {
@@ -62,7 +62,7 @@ const CreateMatchForm = memo(function CreateMatchForm({
   const onSubmit = async (data: MatchFormData) => {
     try {
       setIsLoading(true);
-      socket.connectSocket();
+      // socket.connectSocket();
       const { playerName, aiPrompt, difficulty, participantLimit, duration, numberOfQuestions } = data;
       if (playerName.trim() !== localData.username) {
         setValue({

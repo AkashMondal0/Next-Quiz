@@ -123,19 +123,19 @@ const ResultsModal: React.FC<ResultsModalProps> = React.memo(({
           </div>
 
           <div className="flex flex-col gap-2 pt-2">
-            <Button
+            {/* <Button
               onClick={onTryAgain}
               className="w-full h-12 text-base font-bold bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
             >
               <RotateCcw className="w-4 h-4 mr-2" />
               Try Again
-            </Button>
+            </Button> */}
             <Button
               variant="outline"
               onClick={onClose}
               className={`w-full h-12 text-base font-semibold ${isDark ? 'border-slate-700 hover:bg-slate-800 text-white' : 'border-purple-200 hover:bg-purple-50'}`}
             >
-              Close
+              Go to Result Page
             </Button>
           </div>
         </CardContent>

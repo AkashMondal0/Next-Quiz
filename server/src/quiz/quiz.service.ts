@@ -1,13 +1,14 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { RedisService } from 'src/lib/db/redis/redis.service';
-import { CreateQuizPayload, JoinRoomDto, RoomSession } from './entities/quiz.entity';
+import { CreateQuizPayload, JoinRoomDto, RoomSession, SubmitQuizDto } from './entities/quiz.entity';
 import { EventService } from 'src/event/event.service';
 import { EventGateway } from 'src/event/event.gateway';
+import { AiService } from 'src/ai/ai.service';
 
 @Injectable()
 export class QuizService {
   constructor(private readonly redisService: RedisService,
-    // private readonly aiService: any,
+    private readonly aiService: AiService,
     private readonly eventGateway: EventGateway,
   ) { }
 
@@ -46,7 +47,19 @@ export class QuizService {
         difficulty: createQuizDto.difficulty,
         duration: createQuizDto.duration,
         numberOfQuestions: createQuizDto.numberOfQuestions,
-        matchResults: [],
+        matchResults: [
+          {
+            id: createQuizDto.player.id,
+            username: createQuizDto.player.username,
+            isSubmitted: false,
+            userAnswers: {},
+            score: 0,
+            timeTaken: 0,
+            correctAnswers: 0,
+            wrongAnswers: 0,
+            totalQuestions: 0,
+          }
+        ],
         matchStarted: false,
         matchEnded: false,
         matchDuration: createQuizDto.duration,
@@ -63,7 +76,12 @@ export class QuizService {
       // Store the room in Redis
       await this.redisService.client.set(`room:${roomCode}`, JSON.stringify(room));
       // Trigger prompt data generation
-      // await this.aiService.generateMainData(roomCode, prompt);
+      await this.aiService.generateMainData(roomCode, {
+        topic: createQuizDto.prompt,
+        numberOfQuestions: createQuizDto.numberOfQuestions,
+        difficulty: createQuizDto.difficulty,
+        matchDuration: createQuizDto.duration,
+      });
       return room;
     } catch (error) {
       throw new HttpException("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR)
@@ -92,6 +110,7 @@ export class QuizService {
       throw new HttpException("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
   async joinRoom(joinRoomDto: JoinRoomDto) {
     try {
       const roomData = await this.redisService.client.get(`room:${joinRoomDto.roomCode}`);
@@ -118,6 +137,18 @@ export class QuizService {
         username: joinRoomDto.player.username,
         rank: 0,
         answered: 0,
+      });
+
+      room.matchResults.push({
+        id: joinRoomDto.player.id,
+        username: joinRoomDto.player.username,
+        userAnswers: {},
+        score: 0,
+        timeTaken: 0,
+        correctAnswers: 0,
+        wrongAnswers: 0,
+        totalQuestions: 0,
+        isSubmitted: false,
       });
 
       room.members.push(joinRoomDto.player.id);
@@ -159,5 +190,38 @@ export class QuizService {
 
   async getRoomResult(joinRoomDto: JoinRoomDto) {
     return `This action gets results for room with code: ${joinRoomDto.roomCode}`;
+  }
+
+  async submitQuiz(id: string, submitDto: SubmitQuizDto) {
+    try {
+      const roomData = await this.redisService.client.get(`room:${id}`);
+      if (!roomData) {
+        throw new HttpException("Room not found", HttpStatus.NOT_FOUND);
+      }
+      const room: RoomSession = JSON.parse(roomData) as RoomSession;
+      room.matchResults = room.matchResults.map(result => {
+        if (result.id === submitDto.id) {
+          return {
+            ...result,
+            score: submitDto.score,
+            timeTaken: submitDto.timeTaken,
+            correctAnswers: submitDto.correctAnswers,
+            wrongAnswers: submitDto.wrongAnswers,
+            totalQuestions: submitDto.totalQuestions,
+            userAnswers: submitDto.userAnswers,
+            isSubmitted: true,
+          };
+        }
+        return result;
+      });
+      // Update room in Redis
+      await this.redisService.client.set(`room:${id}`, JSON.stringify(room));
+      // publish room update event
+      // await this.eventGateway.submitQuiz(id, room.matchResults);
+      return { message: "Quiz submitted successfully" };
+    } catch (error) {
+      console.error(error);
+      throw new HttpException("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

@@ -11,15 +11,17 @@ export type TemporaryUser = {
 }
 
 export type QuestionResponse = {
-  text: string;
+  id: number;
+  question: string;
   options: string[];
-  correctIndex: number;
+  correctAnswer: number;
+  points: number;
 };
 
 export type QuizPrompt = {
   topic: string;
   numberOfQuestions?: number;
-  difficulty?: "easy" | "medium" | "hard";
+  difficulty?: "easy" | "medium" | "hard" | string;
   matchDuration?: number;
 };
 

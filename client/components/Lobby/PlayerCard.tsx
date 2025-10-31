@@ -4,9 +4,9 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Player } from '@/types';
 import { LogIn } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/hooks/hooks';
-import useSocket from '@/hooks/socketHook';
+// import useSocket from '@/hooks/socketHook';
 import { useState } from 'react';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
@@ -16,12 +16,12 @@ import { randomColor } from '@/lib/utils';
 export default function PlayerCard({ player, isHost, isDark, variants, textPrimaryClass, roomCode }: { player: Player; isHost: boolean; isDark: boolean; variants: any; textPrimaryClass: string; roomCode: string }) {
   const color = randomColor()
   const dispatch = useAppDispatch();
-  const socket = useSocket();
+  // const socket = useSocket();
   const [isLoading, setIsLoading] = useState(false);
   
   const handleKickPlayer = async () => {
     setIsLoading(true);
-    socket.connectSocket();
+    // socket.connectSocket();
     try {
       await api.post("/quiz/room/kick", {
         player: player,

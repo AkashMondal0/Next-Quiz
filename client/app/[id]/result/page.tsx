@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, use } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,28 +8,29 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
   Moon, Sun, Crown, Trophy, Medal, Clock, TrendingUp, Star,
-  Home, RotateCcw, Share2
+  Home,
 } from 'lucide-react';
 import { randomColor } from '@/lib/utils';
-import { RankUser } from '@/types';
 import PlayerCard from '@/components/Result/PlayerCard';
 import Link from 'next/link';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { fetchRoomSession } from '@/store/features/account/Api';
 
-export default function QuizResults() {
+export default function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id: roomCode } = use(params)
   const [isDark, setIsDark] = useState(true);
   const [showConfetti, setShowConfetti] = useState(true);
-
-  const RAW_PLAYERS: RankUser[] = [
-    { username: 'Alex Thunder', score: 950, correctAnswers: 9, wrongAnswers: 1, totalQuestions: 10, timeTaken: 30 },
-    { username: 'Jordan Smith', score: 820, correctAnswers: 8, wrongAnswers: 2, totalQuestions: 10, timeTaken: 25 },
-    { username: 'Casey Brown', score: 780, correctAnswers: 8, wrongAnswers: 2, totalQuestions: 10, timeTaken: 28 },
-    { username: 'Sam Parker', score: 710, correctAnswers: 7, wrongAnswers: 3, totalQuestions: 10, timeTaken: 22 },
-    { username: 'Taylor Swift', score: 680, correctAnswers: 7, wrongAnswers: 3, totalQuestions: 10, timeTaken: 24 },
-    { username: 'Morgan Lee', score: 590, correctAnswers: 6, wrongAnswers: 4, totalQuestions: 10, timeTaken: 27 },
-  ] as RankUser[];
+  const roomSession = useAppSelector((state) => state.AccountState.roomSession);
+  const RAW_PLAYERS = roomSession?.matchResults
+  const dispatch = useAppDispatch();
 
   // Compute derived fields
   const PLAYERS = useMemo(() => {
+    if (!RAW_PLAYERS) return [];
     // compute derived metrics first
     const processed = RAW_PLAYERS.map((p, idx) => {
       const accuracy = Math.round((p.correctAnswers / p.totalQuestions) * 100);
@@ -61,14 +62,14 @@ export default function QuizResults() {
         rank = isTie ? prevAssigned.rank : i + 1;
       }
       // id is stable within this run (use original index + 1 to avoid collisions)
-      result.push({ ...p, rank, id: p._origIndex + 1 });
+      // cast p to any to avoid conflicts with an existing 'id' type coming from external types
+      result.push({ ...(p as any), rank, id: p._origIndex + 1 });
     }
-
     return result;
   }, [RAW_PLAYERS]);
 
   // memoize computed values to avoid recalculation on each render
-  const players = useMemo(() => PLAYERS, []);
+  const players = useMemo(() => PLAYERS, [PLAYERS]);
   const topThree = useMemo(() => players.slice(0, 3), [players]);
 
   const avgAccuracy = useMemo(() => Math.round(players.reduce((acc, p) => acc + p.accuracy, 0) / players.length), [players]);
@@ -100,6 +101,23 @@ export default function QuizResults() {
   const cardBgClass = isDark ? 'bg-slate-900/90 border-slate-800' : 'bg-white/90 border-purple-200';
 
   const toggleTheme = useCallback(() => setIsDark(v => !v), []);
+
+  const handleFetchRoomSession = useCallback(() => {
+    if (!roomCode) return;
+    dispatch(fetchRoomSession(roomCode));
+  }, [dispatch, roomCode]);
+
+  useEffect(() => {
+    handleFetchRoomSession();
+  }, []);
+
+  if (players.length === 0) {
+    return (
+      <div className={`min-h-screen ${bgClass} flex items-center justify-center p-4 overflow-hidden relative transition-colors duration-500`}>
+        <p className="text-lg text-center">No players found.</p>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen ${bgClass} flex items-center justify-center p-4 overflow-hidden relative transition-colors duration-500`}>
@@ -154,7 +172,7 @@ export default function QuizResults() {
                 <div className="grid grid-cols-3 gap-4 md:gap-6 items-end max-w-4xl mx-auto">
 
                   {/* 2nd */}
-                  <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.25 }} className="text-center">
+                  {topThree[1] ? <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.25 }} className="text-center">
                     <div className="relative inline-block mb-4">
                       <Avatar className="w-20 h-20 md:w-24 md:h-24 border-4 border-slate-400 mx-auto shadow-xl"><AvatarFallback className={`bg-gradient-to-br ${topThree[1].color} text-white text-2xl md:text-3xl font-bold`}>
                         {topThree[1].username.charAt(0).toUpperCase()}{topThree[1].username.charAt(1).toUpperCase()}
@@ -166,10 +184,10 @@ export default function QuizResults() {
                       <p className="font-bold text-white text-sm md:text-base truncate px-2 max-w-full">{topThree[1].username}</p>
                       <p className="text-white/90 text-xl md:text-2xl font-bold">{topThree[1].score}</p>
                     </div>
-                  </motion.div>
+                  </motion.div> : null}
 
                   {/* 1st */}
-                  <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }} className="text-center">
+                  {topThree[0] ? <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }} className="text-center">
                     <div className="relative inline-block mb-4">
                       <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-yellow-400 mx-auto shadow-2xl"><AvatarFallback className={`bg-gradient-to-br ${topThree[0].color} text-white text-3xl md:text-4xl font-bold`}>{topThree[0].username.charAt(0).toUpperCase()}{topThree[0].username.charAt(1).toUpperCase()}</AvatarFallback></Avatar>
                       <div className="absolute -top-3 -right-3 w-14 h-14 md:w-16 md:h-16 bg-yellow-400 rounded-full flex items-center justify-center shadow-2xl border-4 border-white"><Crown className="w-7 h-7 md:w-9 md:h-9 text-white" /></div>
@@ -180,10 +198,10 @@ export default function QuizResults() {
                       <p className="font-bold text-white text-base md:text-lg truncate px-2 max-w-full">{topThree[0].username}</p>
                       <p className="text-white text-2xl md:text-3xl font-bold">{topThree[0].score}</p>
                     </div>
-                  </motion.div>
+                  </motion.div> : null}
 
                   {/* 3rd */}
-                  <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.35 }} className="text-center">
+                  {topThree[2] ? <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.35 }} className="text-center">
                     <div className="relative inline-block mb-4">
                       <Avatar className="w-20 h-20 md:w-24 md:h-24 border-4 border-orange-400 mx-auto shadow-xl"><AvatarFallback className={`bg-gradient-to-br ${topThree[2].color} text-white text-2xl md:text-3xl font-bold`}>{topThree[2].username.charAt(0).toUpperCase()}{topThree[2].username.charAt(1).toUpperCase()}</AvatarFallback></Avatar>
                       <div className="absolute -top-2 -right-2 w-10 h-10 md:w-12 md:h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-xl border-4 border-white">3</div>
@@ -193,7 +211,8 @@ export default function QuizResults() {
                       <p className="font-bold text-white text-sm md:text-base truncate px-2 max-w-full">{topThree[2].username}</p>
                       <p className="text-white/90 text-xl md:text-2xl font-bold">{topThree[2].score}</p>
                     </div>
-                  </motion.div>
+                  </motion.div> : null}
+
                 </div>
               </CardContent>
             </Card>

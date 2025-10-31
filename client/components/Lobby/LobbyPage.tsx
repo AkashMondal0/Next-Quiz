@@ -82,8 +82,8 @@ export default function LobbyPage({ id }: { id: string }) {
                         <GameSettingsCard
                             isDark={isDark}
                             data={{
-                                questions: 10,
-                                difficulty: 'Medium'
+                                questions: roomSession?.numberOfQuestions || 0,
+                                difficulty: roomSession?.difficulty || 'N/A',
                             }}
                         />
                         <ActionButtons

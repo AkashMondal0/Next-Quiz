@@ -45,7 +45,9 @@ export type RoomSession = {
 export type MatchResults = {
     id: string;
     username: string;
+    userAnswers: { [questionId: string]: string };
     score: number;
+    timeTaken: number;
     correctAnswers: number;
     wrongAnswers: number;
     totalQuestions: number;
@@ -90,4 +92,5 @@ export type RankUser = {
   fastestAnswer: number;
   streak: number;
   id: number;
+  isSubmitted?: boolean;
 };

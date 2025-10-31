@@ -46,15 +46,18 @@ export type RoomSession = {
 export type MatchResults = {
     id: string;
     username: string;
+    userAnswers: { [questionId: string]: string };
     score: number;
+    timeTaken: number;
     correctAnswers: number;
     wrongAnswers: number;
     totalQuestions: number;
-    avgTime: number;
-    streak: number;
-    rank: number;
-    accuracy: number;
-    fastestAnswer: number;
+    isSubmitted: boolean;
+    // avgTime: number;
+    // streak: number;
+    // rank: number;
+    // accuracy: number;
+    // fastestAnswer: number;
 }
 
 export type MatchRanking = {
@@ -68,4 +71,15 @@ export type MatchRanking = {
 export type JoinRoomDto = {
     roomCode: string;
     player: Player;
+}
+
+export type SubmitQuizDto = {
+    id: string;
+    username: string;
+    userAnswers: { [questionId: string]: string };
+    score: number;
+    timeTaken: number;
+    correctAnswers: number;
+    wrongAnswers: number;
+    totalQuestions: number;
 }

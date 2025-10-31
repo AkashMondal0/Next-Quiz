@@ -41,7 +41,7 @@ export default function ActionButtons({
 
   const onSubmit = async () => {
     setIsLoading(true);
-    socket.connectSocket();
+    // socket.connectSocket();
     try {
       await api.post("/quiz/room/leave", {
         player: localData,
