@@ -3,7 +3,7 @@ import { Server, Socket } from 'socket.io';
 import configuration from 'src/lib/configs/configuration';
 import { EventService } from './event.service';
 import { OnModuleInit } from '@nestjs/common';
-import { Player } from 'src/quiz/entities/quiz.entity';
+import { Player, RoomSession } from 'src/quiz/entities/quiz.entity';
 
 const url = configuration().REDIS_URL;
 if (!url) throw new Error("REDIS_URL is not defined in .env file");
@@ -63,6 +63,10 @@ export class EventGateway implements OnModuleInit {
   @SubscribeMessage('ranking-activity')
   async handleRankingActivity(@MessageBody() data: { playerId: string, roomCode: string, answeredCount: number, members: string[] }) {
     return this.eventService.handleRankingActivity(data.playerId, data.roomCode, data.answeredCount, data.members);
+  }
+
+  async submitQuiz(members: string[], matchResults: RoomSession["matchResults"]) {
+    return this.eventService.submitQuiz(members, matchResults);
   }
 
 }

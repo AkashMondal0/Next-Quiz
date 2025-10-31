@@ -216,8 +216,9 @@ export class QuizService {
       });
       // Update room in Redis
       await this.redisService.client.set(`room:${id}`, JSON.stringify(room));
+      const members = room.players.map(player => player.id).filter(pid => pid !== submitDto.id);
       // publish room update event
-      // await this.eventGateway.submitQuiz(id, room.matchResults);
+      await this.eventGateway.submitQuiz(members, room.matchResults);
       return { message: "Quiz submitted successfully" };
     } catch (error) {
       console.error(error);

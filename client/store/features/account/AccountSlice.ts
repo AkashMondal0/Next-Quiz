@@ -59,6 +59,11 @@ export const AccountSlice = createSlice({
                 }
             }
         },
+        resultUpdate(state, action: PayloadAction<RoomSession["matchResults"]>) {
+            if (state.roomSession) {
+                state.roomSession.matchResults = action.payload;
+            }
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -112,7 +117,8 @@ export const {
     roomReset,
     playerReadyToggle,
     gameStart,
-    rankingActivity
+    rankingActivity,
+    resultUpdate
 } = AccountSlice.actions
 
 export default AccountSlice.reducer

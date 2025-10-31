@@ -30,7 +30,7 @@ export default function SplashScreen() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-3xl font-bold tracking-tight"
           >
-            MyApp
+            Next Quiz
           </motion.div>
 
           {/* Animated loading dots */}

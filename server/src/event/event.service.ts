@@ -114,4 +114,11 @@ export class EventService {
     if (!socketIds?.length) return;
     this.server.to(socketIds).emit("ranking-activity", { playerId, roomCode, answeredCount });
   }
+
+   async submitQuiz(members: string[], matchResults: RoomSession["matchResults"]) {
+    if (!members.length) return;
+    const socketIds = await this.findSocketIdsByUsersIds(members);
+    if (!socketIds?.length) return;
+    this.server.to(socketIds).emit("quiz-submitted", { matchResults });
+  }
 }

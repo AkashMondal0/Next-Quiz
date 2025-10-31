@@ -11,9 +11,9 @@ import {
 import { useDispatch } from "react-redux";
 import { toast } from 'sonner'
 import { io, Socket } from "socket.io-client";
-import { Player, TemporaryUser } from "@/types";
+import { Player, RoomSession, TemporaryUser } from "@/types";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { gameStart, joinUserInRoom, leaveUserFromRoom, playerReadyToggle, rankingActivity, roomReset } from "@/store/features/account/AccountSlice";
+import { gameStart, joinUserInRoom, leaveUserFromRoom, playerReadyToggle, rankingActivity, resultUpdate, roomReset } from "@/store/features/account/AccountSlice";
 import { useRouter } from "next/navigation";
 
 interface SocketStateType {
@@ -90,6 +90,13 @@ const Socket_Provider = ({ children }: { children: React.ReactNode }) => {
                 roomCode: data.roomCode,
                 answeredCount: data.answeredCount
             }));
+        });
+
+        socket.on('quiz-submitted', (data: { matchResults: RoomSession["matchResults"] }) => {
+            // Handle quiz submitted event
+            // You can dispatch an action or update the state as needed
+            // console.log("Quiz submitted:", data.matchResults);
+            dispatch(resultUpdate(data.matchResults))
         });
     }, [dispatch]);
 

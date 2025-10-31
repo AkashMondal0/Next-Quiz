@@ -2,29 +2,26 @@ version: '3.8'
 services:
 
   server:
-    image: akashmondal0/next-stream-server:latest
+    image: akashmondal0/next-quiz-server:latest
     ports:
       - "4000:4000"
     networks:
       - monitoring
     env_file:
-      - .env2
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./jobs:/app/jobs
+      - .env
     restart: unless-stopped
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf2:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - server
-    restart: unless-stopped
-    networks:
-      - monitoring
+  # nginx:
+  #   image: nginx:latest
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.conf3:/etc/nginx/nginx.conf:ro
+  #   depends_on:
+  #     - server
+  #   restart: unless-stopped
+  #   networks:
+  #     - monitoring
 networks:
   monitoring:
     driver: bridge
