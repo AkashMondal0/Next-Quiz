@@ -6,15 +6,16 @@ import ThemeToggle from './ThemeToggle';
 import LandingPage from './LandingScreen';
 import JoinRoomForm from './JoinRoomForm';
 import CreateMatchForm from './CreateMatchForm';
+import QuickMatch from './QuickMatch';
 
 // ============= MAIN APP COMPONENT =============
 export default function QuizApp() {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [selectedOption, setSelectedOption] = useState<"join" | "create" | "quick" | null>(null);
   const [isDark, setIsDark] = useState<boolean>(true);
 
   const particles = useParticles(12);
   const toggleTheme = useCallback(() => setIsDark((s) => !s), []);
-  const handleOptionSelect = useCallback((option: string) => setSelectedOption(option), []);
+  const handleOptionSelect = useCallback((option: "join" | "create" | "quick") => setSelectedOption(option), []);
   const handleBack = useCallback(() => {
     setSelectedOption(null);
   }, []);
@@ -53,6 +54,13 @@ export default function QuizApp() {
               cardBgClass={cardBgClass}
               onBack={handleBack}
             />
+          ) : selectedOption === 'quick' ? (
+            <QuickMatch
+              isDark={isDark}
+              textPrimaryClass={textPrimaryClass}
+              textSecondaryClass={textSecondaryClass}
+              cardBgClass={cardBgClass}
+              onBack={handleBack} />
           ) : (
             <CreateMatchForm
               isDark={isDark}

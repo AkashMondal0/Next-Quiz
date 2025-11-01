@@ -2,7 +2,7 @@
 
 A real-time multiplayer quiz battle application where players compete against each other in AI-generated quiz challenges. Built with Next.js, NestJS, and Socket.IO for seamless real-time gameplay.
 
-![Quiz Battle Demo](https://via.placeholder.com/800x400/0f172a/white?text=Quiz+Battle+Arena)
+![Quiz Battle Demo](/1.png)
 
 ## ✨ Features
 

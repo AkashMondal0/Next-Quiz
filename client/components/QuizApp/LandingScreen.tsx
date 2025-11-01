@@ -5,14 +5,14 @@ import { ArrowRight, Crown, Hash, Sparkles, Trophy, UserPlus, Users, Zap } from 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 
 // ============= LANDING PAGE COMPONENT =============
-const LandingPage = memo(function LandingPage({ isDark, textPrimaryClass, textSecondaryClass, cardBgClass, onSelectOption }: { isDark: boolean, textPrimaryClass: string, textSecondaryClass: string, cardBgClass: string, onSelectOption: (option: string) => void }) {
+const LandingPage = memo(function LandingPage({ isDark, textPrimaryClass, textSecondaryClass, cardBgClass, onSelectOption }: { isDark: boolean, textPrimaryClass: string, textSecondaryClass: string, cardBgClass: string, onSelectOption: (option: "join" | "create" | "quick") => void }) {
  return <motion.div
     key="landing"
     variants={containerVariants}
     initial="hidden"
     animate="visible"
     exit={{ opacity: 0, scale: 0.98 }}
-    className="space-y-8"
+    className="space-y-8 py-10"
   >
     {/* Header */}
     <motion.div variants={itemVariants} className="text-center space-y-6">
@@ -123,10 +123,39 @@ const LandingPage = memo(function LandingPage({ isDark, textPrimaryClass, textSe
           </CardContent>
         </Card>
       </motion.div>
+
+      <motion.div {...cardMotionProps} onClick={() => onSelectOption('quick')} className="cursor-pointer group">
+        <Card className={`${cardBgClass} border-2 backdrop-blur-xl shadow-xl h-full overflow-hidden relative transition-all duration-300 ${isDark ? 'hover:border-pink-500' : 'hover:border-pink-400'}`}>
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-500/8 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <CardHeader className="space-y-4 relative z-10">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-pink-500 to-yellow-500 rounded-2xl flex items-center justify-center shadow-md">
+              <Sparkles className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <CardTitle className={`text-2xl md:text-3xl font-bold mb-1 ${textPrimaryClass}`}>
+                Quick Play
+              </CardTitle>
+              <CardDescription className={`text-sm md:text-base ${textSecondaryClass}`}>
+                Jump into an instant match — no setup, no wait.
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="relative z-10">
+            <div className={`flex items-center justify-between p-4 md:p-5 ${isDark ? 'bg-pink-500/20' : 'bg-pink-50'} rounded-xl group-hover:shadow-md transition-shadow`}>
+              <span className={`${isDark ? 'text-pink-300' : 'text-pink-700'} font-bold text-base md:text-lg`}>
+                Instant Match
+              </span>
+              <motion.div animate={{ x: [0, 6, 0] }} transition={{ duration: 1.6, repeat: Infinity }}>
+                <ArrowRight className={`${isDark ? 'text-pink-400' : 'text-pink-600'} w-5 h-5`} />
+              </motion.div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </motion.div>
 
     {/* Stats */}
-    <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto px-4">
+    {/* <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto px-4">
       {[
         { label: 'Active Players', value: '10K+', icon: Users },
         { label: 'Daily Quizzes', value: '500+', icon: Trophy },
@@ -143,7 +172,7 @@ const LandingPage = memo(function LandingPage({ isDark, textPrimaryClass, textSe
           <div className={`text-sm ${textSecondaryClass}`}>{stat.label}</div>
         </motion.div>
       ))}
-    </motion.div>
+    </motion.div> */}
   </motion.div>
 });
 

@@ -40,4 +40,9 @@ export class QuizController {
   submitQuiz(@Param('id') id: string, @Body() submitDto: SubmitQuizDto) {
     return this.quizService.submitQuiz(id, submitDto);
   }
+
+  @Post('quick/create')
+  createQuickMatch(@Body() createQuizDto: CreateQuizPayload) {
+    return this.quizService.createQuickMatch(createQuizDto);
+  }
 }

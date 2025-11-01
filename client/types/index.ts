@@ -31,7 +31,7 @@ export type RoomSession = {
     participantLimit: number;
     difficulty: string;
     duration: number; // in seconds
-    questions: any[];
+    questions: Question[];
     createdAt: string;
     matchRanking: MatchRanking[];
     matchStarted: boolean;

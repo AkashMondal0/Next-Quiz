@@ -225,4 +225,49 @@ export class QuizService {
       throw new HttpException("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  async createQuickMatch(createQuizDto: CreateQuizPayload) {
+    try {
+      const roomCode = this.generateRoomCode();
+      const room: RoomSession = {
+        ...createQuizDto,
+        id: roomCode,
+        players: [createQuizDto.player],
+        matchResults: [
+          {
+            id: createQuizDto.player.id,
+            username: createQuizDto.player.username,
+            isSubmitted: false,
+            userAnswers: {},
+            score: 0,
+            timeTaken: 0,
+            correctAnswers: 0,
+            wrongAnswers: 0,
+            totalQuestions: 0,
+          }
+        ],
+        matchRanking: [],
+        members: [],
+        code: roomCode,
+        readyPlayers: [],
+        status: 'waiting',
+        questions: [],
+        createdAt: '',
+        matchStarted: false,
+        matchEnded: false,
+        matchDuration: createQuizDto.duration,
+      };
+      await this.redisService.client.set(`room:${roomCode}`, JSON.stringify(room));
+      await this.aiService.generateMainData(roomCode, {
+        topic: createQuizDto.prompt,
+        numberOfQuestions: createQuizDto.numberOfQuestions,
+        difficulty: createQuizDto.difficulty,
+        matchDuration: createQuizDto.duration,
+      });
+      return room;
+    } catch (error) {
+      console.error(error);
+      throw new HttpException("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }
