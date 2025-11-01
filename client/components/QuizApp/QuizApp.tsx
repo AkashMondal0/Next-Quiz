@@ -1,15 +1,19 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import LandingPage from './LandingScreen';
 import JoinRoomForm from './JoinRoomForm';
 import CreateMatchForm from './CreateMatchForm';
 import QuickMatch from './QuickMatch';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { roomReset } from '@/store/features/account/AccountSlice';
 
 // ============= MAIN APP COMPONENT =============
 export default function QuizApp() {
   const [selectedOption, setSelectedOption] = useState<"join" | "create" | "quick" | null>(null);
   const [isDark, setIsDark] = useState<boolean>(true);
   const handleOptionSelect = useCallback((option: "join" | "create" | "quick") => setSelectedOption(option), []);
+  const roomSession = useAppSelector((state) => state.AccountState.roomSession);
+  const dispatch = useAppDispatch()
   const handleBack = useCallback(() => {
     setSelectedOption(null);
   }, []);
@@ -24,6 +28,12 @@ export default function QuizApp() {
 
   const textPrimaryClass = isDark ? 'text-white' : 'text-gray-900';
   const textSecondaryClass = isDark ? 'text-slate-300' : 'text-gray-600';
+
+  useEffect(() => {
+    if (roomSession) {
+      dispatch(roomReset())
+    }
+  }, []);
 
   return (
     <div className={`min-h-screen ${bgClass} flex items-center justify-center p-2 overflow-hidden relative transition-colors duration-500 pt-5`}>

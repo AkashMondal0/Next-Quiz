@@ -6,10 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import {
-  Moon, Sun, Crown, Trophy, Medal, Clock, TrendingUp, Star,
-  Home,
-} from 'lucide-react';
+import { Crown, Trophy, Medal, Clock, TrendingUp, Star, Home } from 'lucide-react';
 import { randomColor } from '@/lib/utils';
 import PlayerCard from '@/components/Result/PlayerCard';
 import Link from 'next/link';

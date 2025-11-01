@@ -1,7 +1,11 @@
 'use client';
-import LobbyPage from '@/components/Lobby/LobbyPage';
 import { use } from 'react'
- 
+import dynamic from 'next/dynamic';
+
+const LobbyPage = dynamic(() => import('@/components/Lobby/LobbyPage'), {
+  ssr: false,
+});
+
 export default function Page({
   params,
 }: {

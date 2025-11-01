@@ -11,8 +11,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => clearTimeout(timer);
   }, []);
 
-  if (showSplash) return <SplashScreen />;
-  return <>{children}</>;
+  return <>
+    {showSplash ? <SplashScreen /> : null}
+    {children}</>;
 };
 
 export default AuthProvider;

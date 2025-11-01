@@ -21,7 +21,7 @@ export default function SplashScreen() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.6 }}
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background text-foreground"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-foreground"
         >
           {/* Logo or App Name */}
           <motion.div

@@ -29,7 +29,7 @@ A real-time multiplayer quiz battle application where players compete against ea
 ## 🛠️ Tech Stack
 
 ### Frontend (Client)
-- **Framework**: Next.js 13 with App Router
+- **Framework**: Next.js 15 with App Router
 - **Language**: TypeScript
 - **UI Components**: Radix UI + Tailwind CSS
 - **State Management**: Redux Toolkit
@@ -44,7 +44,6 @@ A real-time multiplayer quiz battle application where players compete against ea
 - **Cache**: Redis (ioredis)
 - **Real-time**: Socket.IO (WebSocket Gateway)
 - **AI Integration**: Google Gemini API
-- **API Documentation**: Built-in NestJS Swagger
 
 ## 🚀 Getting Started
 
