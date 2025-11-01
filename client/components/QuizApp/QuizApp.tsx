@@ -1,8 +1,5 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useParticles } from '@/utility/hooks';
-import AnimatedBackground from './BackgroundBlobs';
-import ThemeToggle from './ThemeToggle';
+import React, { useCallback, useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import LandingPage from './LandingScreen';
 import JoinRoomForm from './JoinRoomForm';
 import CreateMatchForm from './CreateMatchForm';
@@ -12,9 +9,6 @@ import QuickMatch from './QuickMatch';
 export default function QuizApp() {
   const [selectedOption, setSelectedOption] = useState<"join" | "create" | "quick" | null>(null);
   const [isDark, setIsDark] = useState<boolean>(true);
-
-  const particles = useParticles(12);
-  const toggleTheme = useCallback(() => setIsDark((s) => !s), []);
   const handleOptionSelect = useCallback((option: "join" | "create" | "quick") => setSelectedOption(option), []);
   const handleBack = useCallback(() => {
     setSelectedOption(null);
@@ -33,9 +27,6 @@ export default function QuizApp() {
 
   return (
     <div className={`min-h-screen ${bgClass} flex items-center justify-center p-2 overflow-hidden relative transition-colors duration-500 pt-5`}>
-      <AnimatedBackground isDark={isDark} particles={particles} />
-      <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
-
       <div className="w-full max-w-6xl relative z-10">
         <AnimatePresence mode="wait">
           {!selectedOption ? (

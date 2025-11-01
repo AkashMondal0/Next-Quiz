@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { Clock, Settings, Target, UserPlus, Wand2 } from "lucide-react";
+import { Clock, Play, Settings, Target, UserPlus, Wand2 } from "lucide-react";
 import { Label } from "../ui/label";
 import Counter from "./Counter";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
@@ -259,8 +259,8 @@ const QuickMatch = memo(function QuickMatch({
               type="submit"
               className="w-full h-14 text-lg font-bold bg-gradient-to-r from-blue-500 to-cyan-600 shadow-xl transition-all duration-200"
             >
-              <UserPlus className="w-5 h-5 mr-2" />
-              Create Match
+              <Play className="w-5 h-5 mr-2" />
+              Start Quick Match
             </Button>
 
             <Button

@@ -11,7 +11,7 @@ import { RoomSession } from '@/types';
 import Link from 'next/link';
 
 export default function QuickMatchPage({ roomSession }: { roomSession: RoomSession }) {
-   const [isDark, setIsDark] = useState(true);
+    const [isDark, setIsDark] = useState(true);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [timeLeft, setTimeLeft] = useState(30);
@@ -93,12 +93,6 @@ export default function QuickMatchPage({ roomSession }: { roomSession: RoomSessi
             {/* CSS-based background blobs */}
             <div className={`absolute top-20 left-10 w-96 h-96 ${isDark ? 'bg-purple-600 opacity-20' : 'bg-purple-300 opacity-30'} rounded-full mix-blend-multiply blur-3xl animate-[floatBlob1_20s_linear_infinite]`} />
             <div className={`absolute top-40 right-10 w-96 h-96 ${isDark ? 'bg-blue-600 opacity-20' : 'bg-blue-300 opacity-30'} rounded-full mix-blend-multiply blur-3xl animate-[floatBlob2_18s_linear_infinite]`} />
-
-            {/* Theme toggle */}
-            <motion.button onClick={() => setIsDark(!isDark)} className={`fixed top-6 right-6 z-50 p-4 rounded-2xl backdrop-blur-lg shadow-xl border transition-all duration-300 ${isDark ? 'bg-slate-800/80 border-slate-700 hover:bg-slate-700/80' : 'bg-white/80 border-purple-200 hover:bg-white/90'}`} whileHover={{ scale: 1.05, rotate: 180 }} whileTap={{ scale: 0.95 }}>
-                {isDark ? <Sun className='w-6 h-6 text-yellow-400' /> : <Moon className='w-6 h-6 text-purple-600' />}
-            </motion.button>
-
 
             <div className='w-full max-w-7xl relative z-10'>
                 <motion.div
@@ -412,7 +406,7 @@ export default function QuickMatchPage({ roomSession }: { roomSession: RoomSessi
                                         >
                                             Play Again
                                         </motion.button>
-                                       <Link href="/" passHref className='mx-2'>
+                                        <Link href="/" passHref className='mx-2'>
                                             <motion.button
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}

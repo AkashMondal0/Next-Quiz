@@ -65,8 +65,6 @@ export default function LobbyPage({ id }: { id: string }) {
         <div className={`min-h-screen ${bgClass} flex items-center justify-center p-4 overflow-hidden relative transition-colors duration-500`}>
             <div className={`absolute top-20 left-10 w-96 h-96 ${isDark ? 'bg-purple-600 opacity-20' : 'bg-purple-300 opacity-30'} rounded-full mix-blend-multiply blur-3xl animate-[floatBlob1_20s_linear_infinite]`} />
             <div className={`absolute top-40 right-10 w-96 h-96 ${isDark ? 'bg-blue-600 opacity-20' : 'bg-blue-300 opacity-30'} rounded-full mix-blend-multiply blur-3xl animate-[floatBlob2_18s_linear_infinite]`} />
-            <ThemeToggle isDark={isDark} onToggle={() => setIsDark(!isDark)} />
-
             <motion.div variants={containerVariants} initial="hidden" animate="visible" className="w-full max-w-6xl relative z-10">
                 <div className="grid lg:grid-cols-3 gap-6">
                     <motion.div variants={itemVariants} className="lg:col-span-1 space-y-6">

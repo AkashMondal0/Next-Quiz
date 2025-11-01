@@ -139,12 +139,6 @@ export default function Page({
         ))}
       </AnimatePresence>
 
-      {/* Theme Toggle */}
-      <motion.button onClick={toggleTheme} initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5 }}
-        className={`fixed top-6 right-6 z-50 p-4 rounded-2xl ${isDark ? 'bg-slate-800/80 hover:bg-slate-700/80' : 'bg-white/80 hover:bg-white/90'} backdrop-blur-lg shadow-xl border ${isDark ? 'border-slate-700' : 'border-purple-200'} transition-all duration-300`} whileHover={{ scale: 1.05 }}>
-        {isDark ? <Sun className="w-6 h-6 text-yellow-400" /> : <Moon className="w-6 h-6 text-purple-600" />}
-      </motion.button>
-
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="w-full max-w-7xl relative z-10">
         <div className="space-y-8">
 
